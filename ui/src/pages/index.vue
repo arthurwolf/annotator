@@ -90,7 +90,9 @@
                                 <v-btn icon="mdi-magnify-plus-outline" :disabled="console_timeline.is_mode_zoom" size="large" @click="console_timeline.set_mode('zoom')">
                                     <v-icon icon="mdi-magnify-plus-outline"></v-icon>
                                     <v-tooltip activator="parent" location="bottom">
-                                        Set the timeline into <strong>zoom</strong> mode.
+                                        Set the timeline into <strong>zoom</strong> mode.<br>
+                                        <strong>Click</strong> to zoom in, <strong>ctrl+click</strong> to zoom out.<br>
+                                        Or use <strong>ctrl</strong> + <strong>mouse wheel</strong>.
                                     </v-tooltip>
                                 </v-btn>
                             </v-col>
