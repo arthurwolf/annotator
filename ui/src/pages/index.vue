@@ -137,7 +137,7 @@
                 <v-card-text v-show="file_loaded">
                     <textarea 
                     id="annotation"
-                    @keydown="text_changed"
+                    @keyup="text_changed"
                     style="border: 1px dotted white; width: 100%"
                     class="mt-3 pa-1"
                 ></textarea>
