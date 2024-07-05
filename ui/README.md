@@ -1,4 +1,62 @@
-# Vuetify (Default)
+# Welcome!
+## LibreCode Annotation Tool
+An [asciinema](https://asciinema.org/)-based coding session annotator aimed at training an LLM to assist at a deeper level within debugging sessions.
+
+## Background
+LLMs such as ChatGPT rely heavily on articles and code commits rather than the ever-evolving context of a coding session which consist of attempts, failures, successes, screen switching, and so on. So, the goal here is to enrich the training data of an LLM by providing it with a more dynamic and real-time coding session data.
+
+## Features
+- upload an asciinema recording
+- annotate the recording with comments
+- export the annotated recording as a new asciinema recording
+
+# Installation Instructions
+## Prerequisites
+- Install [Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- Install [bun](https://bun.sh/docs/installation)
+
+## Installation
+```bash
+bun install
+```
+
+# Deployment Instructions
+## Local Development
+```bash
+bun dev
+```
+
+# Usage Instructions
+- asciinema
+    - install asciinema
+        - `sudo apt install asciinema`
+    - start recording
+        - `asciinema rec 'hello-world.rec' --stdin`
+    - stop recording
+        - press `<ctrl-d>` or type `exit` when you're done
+    - play recording
+        - `asciinema play 'hello-world.rec'`
+- run and open the annotation app in your browser
+    - `bun dev`
+    - `http://localhost:3000`
+- upload asciinema recording to the annotator app
+    - click on the upload button
+    - select the recording file
+    - click play
+- annotate the asciinema recording
+    - pause the recording
+    - place the orange timeline cursor to where you want to begin an annotated segment of time
+    - click on the red button to set the beginning keyframe
+    - place the orange cursor to where you want to end the annotated segment of time
+    - click on the green button to set the ending keyframe
+    - click the "create new annotation" button
+    - move the orange cursor over the annotation until you see "no text" in the annotation text box
+    - replace "no text" with your annotation
+    - repeat the above steps for each annotation
+    - finally, click the "download" button to export the annotated recording
+
+
+# Default Info About Vite and Vuetify
 
 This is the official scaffolding tool for Vuetify, designed to give you a head start in building your new Vuetify application. It sets up a base template with all the necessary configurations and standard directory structure, enabling you to begin development without the hassle of setting up the project from scratch.
 
