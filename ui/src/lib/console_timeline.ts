@@ -160,6 +160,27 @@ export default class ConsoleTimeline {
 
     }
 
+    // Set the time of the timeline.
+    set_time(time:number){
+
+        // TODO: Currently this doesn't "move" the current window to the position of the "new" current position, we should improve that.
+
+        // Set the time.
+        if(this._timeline){
+            
+            this._timeline.setTime(time*1000);
+
+            // Test.
+            //this._timeline.scrollToRightBounds()
+
+            //this._timeline.redraw();
+
+            //this._timeline.rescale();
+
+        }
+
+    }
+
     // Method to find the group and first keyframe based on a time.
     find_group_and_first_keyframe(time: number) {
 

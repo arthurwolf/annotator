@@ -218,7 +218,17 @@ let file_loaded : Ref<boolean> = ref(false);
 // The "end" key was pressed.
 function key_press_end() {
 
+    // DEBUG.
     console.log('end key pressed');
+
+    // Get the end position and seek to it.
+    const end_position : number = console_player.seek_to_end();
+
+    // Move the timeline to the end position.
+    console_timeline.set_time(end_position);
+
+    // Play the player.
+    console_player.play();
 
 }
 

@@ -93,8 +93,7 @@ export class Timeline extends TimelineEventsEmitter {
   _currentPos: TimelineMouseData | null = null;
 
   /**
-   * Private. Current active mouse area selection rectangle displayed during the mouse up/down drag events.
-   */
+   * Private. Current active mouse area selection rectangle displayed during the mouse up/down drag events./
   _selectionRect: DOMRect | null = null;
   /**
    * Private. Whether selection rectangle is displayed.
