@@ -171,6 +171,23 @@
 
             </v-card-item>
 
+            <v-card-item style="width: 100%">
+
+                <v-card-title>
+                    Documentation.
+                </v-card-title>
+
+                <v-card-text style="width: 100%">
+                    <ul>
+                        <li> <strong> <pre> A </pre> </strong> key: set marker A. </li>
+                        <li> <strong> <pre> B </pre> </strong> key: set marker B. </li>
+                        <li> <strong> <pre> C </pre> </strong> key: create new annotation. </li>
+                        <li> <strong> <pre> Space </pre> </strong> key: toggle play/pause. </li>
+                    </ul>
+                </v-card-text>
+
+            </v-card-item>
+
         </v-card>
 
         <Keypress key-event="keyup" :key-code="35" @success="key_press_end" />
