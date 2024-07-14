@@ -174,6 +174,10 @@
         </v-card>
 
         <Keypress key-event="keyup" :key-code="35" @success="key_press_end" />
+        <Keypress key-event="keyup" :key-code="65" @success="key_press_a" />
+        <Keypress key-event="keyup" :key-code="66" @success="key_press_b" />
+        <Keypress key-event="keyup" :key-code="67" @success="key_press_c" />
+        <Keypress key-event="keyup" :key-code="32" @success="key_press_space" />
 
     </v-container>
 </template>
@@ -215,11 +219,23 @@ let file_loaded : Ref<boolean> = ref(false);
 // Reference to the textarea element
 //const textarea = ref<null | HTMLTextAreaElement>(null);
 
+// The "space" key was pressed, if the player is playing, pause it, if it's paused, play.
+function key_press_space(event: Event) {
+
+    // So it doesn't scroll the page.
+    // event.preventDefault();
+
+    // If the player is playing, pause it.
+    if (console_player.playing.value) console_player.pause();
+
+    // If the player is paused, play it.
+    else console_player.play();
+
+}
+
+
 // The "end" key was pressed.
 function key_press_end() {
-
-    // DEBUG.
-    console.log('end key pressed');
 
     // Get the end position and seek to it.
     const end_position : number = console_player.seek_to_end();
@@ -229,6 +245,30 @@ function key_press_end() {
 
     // Play the player.
     console_player.play();
+
+}
+
+// The "A" key was pressed.
+function key_press_a() {
+
+    // Set the A keyframe.
+    console_timeline.set_a();
+
+}
+
+// The "B" key was pressed.
+function key_press_b() {
+
+    // Set the B keyframe.
+    console_timeline.set_b();
+
+}
+
+// The "C" key was pressed, "create" a new annotation.
+function key_press_c() {
+
+    // Create a new annotation.
+    console_timeline.new_annotation();
 
 }
 
