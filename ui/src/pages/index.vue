@@ -173,6 +173,8 @@
 
         </v-card>
 
+        <Keypress key-event="keyup" :key-code="35" @success="key_press_end" />
+
     </v-container>
 </template>
 
@@ -182,6 +184,7 @@
 import { Ref, ref, onMounted }                                        from 'vue';
 //import { TimelineModel }                                              from "animation-timeline-js";
 //import {  TimelineModel }                                             from "../lib/animation-timeline-js/src/timeline.ts";
+import Keypress from 'vue-keypress';
 
 
 // Our classes.
@@ -212,16 +215,19 @@ let file_loaded : Ref<boolean> = ref(false);
 // Reference to the textarea element
 //const textarea = ref<null | HTMLTextAreaElement>(null);
 
+// The "end" key was pressed.
+function key_press_end() {
+
+    console.log('end key pressed');
+
+}
+
 
 // Function to log the new radio group value
 function new_detail_value(event) {
 
     // Get the new value
     const new_value : string = event.target.value;
-
-    // Log the new value to the console
-    console.log(`New radio group value: ${event}`);
-    console.log({new_value});
 
     // Set the new value.
     console_timeline.set_detail(new_value);
@@ -231,10 +237,6 @@ function new_detail_value(event) {
 // Function triggered on button click to activate file input
 function on_upload_click() {
 
-    console.log("clicked");
-
-    console.log(file_input);
-
     // Trigger the hidden file input to open the file dialog
     file_input.value?.click();
 }
@@ -242,10 +244,9 @@ function on_upload_click() {
 // Function to handle the file selection from the input
 async function handle_file_upload(event: Event) {
 
-    console.log("uploaded");
-
     // Obtain the file(s) from the event target
     const files = (event.target as HTMLInputElement).files;
+    
     // Check if files are selected
     if (files && files.length > 0) {
 
@@ -314,24 +315,10 @@ async function read_as_text(file: File) : Promise<string> {
 // On mounted hook
 onMounted(async () => {
 
-    /*
-    // The actual model data.
-    let model = { rows: 
-        [
-            { keyframes: [] },
-            { keyframes: [] },
-            { keyframes: [] },
-        ] 
-    };
-
-    
-    // Set up the timeline model (data).
-    console_timeline.setup(model as unknown as TimelineModel);
-    */
-
     // Set up the timeline selection event.
     console_timeline.on_selection((selection) => {
 
+        // Get the textarea.
         const textarea = document.getElementById('annotation') as HTMLInputElement;
 
         // If there is no selection, return.
@@ -339,30 +326,12 @@ onMounted(async () => {
             textarea.value = '';   
             return;
         }
-        // Log the selection.
-        console.log('Selection:');
-        console.log(selection);
 
         // Get the text.
         const text = selection.first_keyframe.text ?? 'no text';
 
-        console.log({text});
-
         // Set the text.
-        // current_text.value = text;
-
-
-        console.log({textarea});
-
-        console.log(`# changing text to ${text}`);
         textarea.value = text;
-        //textarea.innerText = text;
-        //textarea.setAttribute('value', text);
-
-        //if (textarea.value) {
-            // @ts-ignore
-          //  textarea.value.$refs.textarea.value = text;
-        //}
 
     });
 
@@ -376,27 +345,10 @@ onMounted(async () => {
 
 });
 
+// Function to handle the textarea text change.
 function text_changed(event) {
 
-    console.log('Text changed.');
-    console.log(event?.target?.value);
-
     console_timeline.set_text(event?.target?.value)
-
-    // current_text.value = event?.target?.value;
-
-
-    // Get the new value.
-    //const new_value : string = event.target.value;
-
-    // Set the new value.
-
-    // @ts-ignore
-    //console.log(textarea);
-    //console.log(textarea.value);
-    //console.log(textarea.value.$refs);
-    //if(textarea.value) console_timeline.set_text(textarea.value.$refs.textarea.value);
-
 
 }
 

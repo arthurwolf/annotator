@@ -82,6 +82,20 @@ export default class ConsolePlayer {
 
     }
 
+    // Seek to end: get the length of the recording, seek to one second before that, and return that position.
+    seek_to_end(){
+
+        // Get the length of the recording.
+        const length = this._player?.getDuration() || 0;
+
+        // Seek to one second before the end.
+        this._player?.seek(length - 1);
+
+        // Return the current time.
+        return (this._player?.getCurrentTime() || 1) - 1;
+
+    }
+
     
 
 

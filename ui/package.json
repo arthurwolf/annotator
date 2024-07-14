@@ -14,6 +14,7 @@
     "core-js": "^3.34.0",
     "roboto-fontface": "*",
     "vue": "^3.4.21",
+    "vue-keypress": "^2.1.2",
     "vuetify": "^3.5.8"
   },
   "devDependencies": {

@@ -111,10 +111,6 @@ export default class ConsoleTimeline {
         // Set the original detail level/row.
         this.set_detail('near');
 
-        // DEBUG.
-        //this._timeline.position_a = 1000;
-        //this._timeline.position_b = 3000;
-
         // Set the model.
         this._model = model;
 
@@ -316,7 +312,7 @@ export default class ConsoleTimeline {
         console.log({json, hash: hash.toString(), length: json.length});
 
         // Convert the model to the export format.
-        const export_data = this.model_to_export(this._model);
+        const export_data = this.model_to_export(this._model as any);
 
         // Log.
         console.log({export_data});
@@ -444,16 +440,23 @@ export default class ConsoleTimeline {
             // List of group names.
             const groups : string[] = [];
 
-            // Go through the keyframes, find a list of all the groups.
-            for(const keyframe of row.keyframes){
+            if(row.keyframes){ 
 
-                // If the group is not in the list, add it.
-                if(!groups.includes(keyframe.group)) groups.push(keyframe.group);
+                // Go through the keyframes, find a list of all the groups.
+                for(const keyframe of row.keyframes){
+
+                    // If the group is not in the list, add it.
+                    if(!groups.includes(keyframe.group as string)) groups.push(keyframe.group as string);
+
+                }
 
             }
 
             // Go through the groups.
             for(const group of groups){
+
+                // Skip if row.keyframes is null.
+                if(!row.keyframes) continue;
 
                 // Create the annotation.
                 const annotation : Annotation = {
@@ -466,7 +469,7 @@ export default class ConsoleTimeline {
                 const beginning_keyframe = row.keyframes.find(k => k.group == group && k.val == annotation.beginning);
 
                 // If the keyframe is found, set the text.
-                if(beginning_keyframe) annotation.text = beginning_keyframe.text;
+                if(beginning_keyframe) annotation.text = (beginning_keyframe as any).text;
 
                 // Add the annotation to the layer.
                 layer.annotations.push(annotation);
