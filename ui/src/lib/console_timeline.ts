@@ -260,6 +260,43 @@ export default class ConsoleTimeline {
 
     }
 
+    // Delete at current position.
+    delete_at_current_position(){
+
+        // Get the currently selected time.
+        const time : number = this._player.current_time;
+
+        console.log({time});
+
+        // Find the current one.
+        const found = this.find_group_and_first_keyframe(time);
+
+        console.log({found});
+
+        // Delete it from the rows.
+        if(found){
+
+            // Get the row.
+            const row = this._model?.rows[this._selected_level_of_detail];
+
+            console.log({row});
+
+            // If it's null or undefined, skip.
+            if(!row || !row.keyframes) return;
+
+            // Delete all keyframes in the row with the same "group" as the found one.
+            row.keyframes = row.keyframes.filter(k => k.group != found.group);
+
+            // Remove the keyframe.
+            // row?.keyframes.splice(row?.keyframes.indexOf(found.first_keyframe), 1);
+
+            // Redraw the timeline.
+            this._timeline?.redraw();
+
+        }
+
+    }
+
     // Update the timeline.
     async update_timeline(){
 

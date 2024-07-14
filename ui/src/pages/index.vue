@@ -183,6 +183,7 @@
                         <li> <strong> <pre> B </pre> </strong> key: set marker B. </li>
                         <li> <strong> <pre> C </pre> </strong> key: create new annotation. </li>
                         <li> <strong> <pre> Space </pre> </strong> key: toggle play/pause. </li>
+                        <li> <strong> <pre> Delete </pre> </strong> key: delete annotation at current position in current row. </li>
                     </ul>
                 </v-card-text>
 
@@ -195,6 +196,7 @@
         <Keypress key-event="keyup" :key-code="66" @success="key_press_b" />
         <Keypress key-event="keyup" :key-code="67" @success="key_press_c" />
         <Keypress key-event="keyup" :key-code="32" @success="key_press_space" />
+        <Keypress key-event="keyup" :key-code="46" @success="key_press_delete" />
 
     </v-container>
 </template>
@@ -235,6 +237,17 @@ let file_loaded : Ref<boolean> = ref(false);
 
 // Reference to the textarea element
 //const textarea = ref<null | HTMLTextAreaElement>(null);
+
+// Delete at the current position.
+function key_press_delete(){
+
+    // Log.
+    console.log('Delete at current position.');
+
+    // Delete.
+    console_timeline.delete_at_current_position();
+
+}
 
 // The "space" key was pressed, if the player is playing, pause it, if it's paused, play.
 function key_press_space(event: Event) {
