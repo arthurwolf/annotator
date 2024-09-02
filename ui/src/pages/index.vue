@@ -145,6 +145,7 @@
 
                 </v-card-text>
 
+                <!-- 
                 <v-card-title v-show="file_loaded">
                     Level of detail / Line.
                 </v-card-title>
@@ -156,6 +157,15 @@
                         <v-radio label="Far" value="far"></v-radio>
                     </v-radio-group>
                 </v-card-text>
+                -->
+
+                <v-card-title v-show="file_loaded"> Timelines. </v-card-title>
+
+
+                <v-card-text v-show="file_loaded">
+                    <TimelineControl v-if="console_timeline" :console_timeline="console_timeline" />
+                </v-card-text>
+
 
             </v-card-item>
 
@@ -189,6 +199,12 @@
 
             </v-card-item>
 
+            <v-card-item>
+
+
+            </v-card-item>
+
+
         </v-card>
 
         <Keypress key-event="keyup" :key-code="35" @success="key_press_end" />
@@ -197,6 +213,7 @@
         <Keypress key-event="keyup" :key-code="67" @success="key_press_c" />
         <Keypress key-event="keyup" :key-code="32" @success="key_press_space" />
         <Keypress key-event="keyup" :key-code="46" @success="key_press_delete" />
+
 
     </v-container>
 </template>
@@ -213,6 +230,7 @@ import Keypress from 'vue-keypress';
 // Our classes.
 import ConsolePlayer                                                  from '../lib/console_player';
 import ConsoleTimeline                                                from '../lib/console_timeline';
+import TimelineControl                                                from '../components/TimelineControl.vue';
 
 // Make a new ConsolePlayer instance.
 const console_player   : ConsolePlayer   = new ConsolePlayer();
@@ -253,7 +271,7 @@ function key_press_delete(){
 function key_press_space(event: Event) {
 
     // So it doesn't scroll the page.
-    // event.preventDefault();
+    event.preventDefault();
 
     // If the player is playing, pause it.
     if (console_player.playing.value) console_player.pause();
@@ -304,6 +322,7 @@ function key_press_c() {
 
 
 // Function to log the new radio group value
+/*
 function new_detail_value(event) {
 
     // Get the new value
@@ -312,7 +331,7 @@ function new_detail_value(event) {
     // Set the new value.
     console_timeline.set_detail(new_value);
 
-}
+}*/
 
 // Function triggered on button click to activate file input
 function on_upload_click() {

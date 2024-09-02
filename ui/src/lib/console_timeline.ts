@@ -37,8 +37,13 @@ export default class ConsoleTimeline {
     public mode = ref<string>('pan');
     private _a : number|null = null;
     private _b : number|null = null;
-    private _selected_level_of_detail : number = 0;
     private _selection_callback : Function|null = null;
+    private _timelines: { name: string; row: number }[] = [
+        { name: 'Near', row: 0 },
+        { name: 'Medium', row: 1 },
+        { name: 'Far', row: 2 }
+    ];
+    private _selected_timeline: number = 0;
 
 
     // Constructor.
@@ -109,7 +114,7 @@ export default class ConsoleTimeline {
         this._timeline = new Timeline({id:'timeline'});
 
         // Set the original detail level/row.
-        this.set_detail('near');
+        this.select_timeline(0);
 
         // Set the model.
         this._model = model;
@@ -206,7 +211,7 @@ export default class ConsoleTimeline {
         }
 
         // Get the right row based on which row is selected.
-        const row = this._model?.rows[this._selected_level_of_detail];
+        const row = this._model?.rows[this._selected_timeline];
 
         // Search and return what we found.
         return search(row?.keyframes, time*1000);
@@ -240,24 +245,15 @@ export default class ConsoleTimeline {
         this._selection_callback = callback;
     }
 
-    // Set the current level of detail.
-    set_detail(level:string){
-
-        // Change based on the level.
-        if(level == 'near'  ) this._selected_level_of_detail = 0;
-        if(level == 'medium') this._selected_level_of_detail = 1;
-        if(level == 'far'   ) this._selected_level_of_detail = 2;
-
-        // Update the player's selected row.
-        if(this._timeline){
-            
-            // Set the selected row.
-            this._timeline.selected_row = this._selected_level_of_detail;
-
-            // Redraw it.
-            this._timeline.redraw();
+    // Replace set_detail method with select_timeline
+    select_timeline(index: number) {
+        if (index >= 0 && index < this._timelines.length) {
+            this._selected_timeline = index;
+            if (this._timeline) {
+                this._timeline.selected_row = this._timelines[index].row;
+                this._timeline.redraw();
+            }
         }
-
     }
 
     // Delete at current position.
@@ -277,7 +273,7 @@ export default class ConsoleTimeline {
         if(found){
 
             // Get the row.
-            const row = this._model?.rows[this._selected_level_of_detail];
+            const row = this._model?.rows[this._selected_timeline];
 
             console.log({row});
 
@@ -552,7 +548,7 @@ export default class ConsoleTimeline {
 
         console.log(this);
 
-        // For the beginning time, use A if it's set, use the end of the previous annotation if it's not.
+        // For the beginning time, use A if it's set,        // use the end of the previous annotation if it's not.
         const beginning_time : number = this._a ?? 0;
 
         // For the end time, use B if it's set, use the current time if it's not.
@@ -561,7 +557,7 @@ export default class ConsoleTimeline {
         console.log({beginning_time, end_time, a: this._a, b: this._b});
 
         // Create the annotation.
-        this._model?.rows[this._selected_level_of_detail]?.keyframes?.push(
+        this._model?.rows[this._selected_timeline]?.keyframes?.push(
             {val: beginning_time * 1000, group: id}, 
             {val: end_time       * 1000, group: id}
         );
@@ -580,16 +576,50 @@ export default class ConsoleTimeline {
         if(this._timeline) this._timeline.position_b = null;
         if(this._timeline) this._timeline.redraw();
 
-/*
-import { TimelineModel }                                              from "animation-timeline-js";-js";-js";-js";-js";-js";-js";-js";-js";-js";
+    }
 
-    // Getters for the different possible modes.
-    public get is_mode_pan(                ){ return this.mode.value == 'pan'              ; }
-import ConsolePlayer                                                  from '../lib/console_player';yer';yer';yer';yer';yer';yer';yer';yer';yer';
-import ConsoleTimeline                                                from '../lib/console_timeline';ine';ine';ine';ine';ine';ine';ine';ine';ine';
-    public get is_mode_non_interactive_pan(){ return this.mode.value == 'nonInteractivePan'; }
+    // Add new methods for timeline management
+    add_timeline(name: string) {
+        const new_row = this._model?.rows.length ?? 0;
+        this._timelines.push({ name, row: new_row });
+        this._model?.rows.push({ keyframes: [] });
+        this._timeline?.setModel(this._model as TimelineModel);
+    }
 
-*/
+    remove_timeline(index: number) {
+        if (index >= 0 && index < this._timelines.length) {
+            this._timelines.splice(index, 1);
+            this._model?.rows.splice(index, 1);
+            this._timeline?.setModel(this._model as TimelineModel);
+            if (this._selected_timeline >= this._timelines.length) {
+                this.select_timeline(this._timelines.length - 1);
+            }
+        }
+    }
+
+    rename_timeline(index: number, new_name: string) {
+        if (index >= 0 && index < this._timelines.length) {
+            this._timelines[index].name = new_name;
+        }
+    }
+
+    move_timeline(from_index: number, to_index: number) {
+        if (from_index >= 0 && from_index < this._timelines.length &&
+            to_index >= 0 && to_index < this._timelines.length) {
+            const [timeline] = this._timelines.splice(from_index, 1);
+            this._timelines.splice(to_index, 0, timeline);
+            const [row] = this._model?.rows.splice(from_index, 1) ?? [];
+            this._model?.rows.splice(to_index, 0, row);
+            this._timeline?.setModel(this._model as TimelineModel);
+        }
+    }
+
+    get_timelines() {
+        return this._timelines;
+    }
+
+    get_selected_timeline() {
+        return this._selected_timeline;
     }
 
     public get is_mode_pan(                ){ return this.mode.value == 'pan'              ; }
