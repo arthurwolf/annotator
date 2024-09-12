@@ -134,6 +134,6 @@ This project is built with [Vuetify](https://vuetifyjs.com/en/), a UI Library wi
 - [Making a one-time donation with Paypal](https://paypal.me/vuetify)
 
 ## 📑 License
-[MIT](http://opensource.org/licenses/MIT)
+[GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-Copyright (c) 2016-present Vuetify, LLC
+Copyright (c) 2023-present LibreCode project
