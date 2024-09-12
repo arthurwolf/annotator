@@ -164,6 +164,8 @@
 
                 <v-card-text v-show="file_loaded">
                     <TimelineControl v-if="console_timeline" :console_timeline="console_timeline" />
+                    <!-- 
+                    -->
                 </v-card-text>
 
 
@@ -220,6 +222,9 @@
 
 <script setup lang="ts">
 
+//                     
+
+
 // Imports.
 import { Ref, ref, onMounted }                                        from 'vue';
 //import { TimelineModel }                                              from "animation-timeline-js";
@@ -245,7 +250,7 @@ const file_input = ref<HTMLInputElement | null>(null);
 let debug : Ref<string> = ref('');
 
 // Level of detail.
-let detail : Ref<string> = ref('near');
+// let detail : Ref<string> = ref('near');
 
 // Flag for whether a file is loaded or not.
 let file_loaded : Ref<boolean> = ref(false);
@@ -271,7 +276,7 @@ function key_press_delete(){
 function key_press_space(event: Event) {
 
     // So it doesn't scroll the page.
-    event.preventDefault();
+    // event.preventDefault();
 
     // If the player is playing, pause it.
     if (console_player.playing.value) console_player.pause();
@@ -435,12 +440,14 @@ onMounted(async () => {
     });
 
     // 10 times per second:
+    /*
     setInterval(() => {
 
         // TODO: This is a dirty hack due to a failure at getting the right vuejs mechanisms to work, must be fixed.
-        debug.value = JSON.stringify(console_timeline.debug(), null, 2);
+        debug.value = JSON.stringify({timeline: console_timeline.debug(), player: console_player.debug()}, null, 2);
 
     }, 100);
+    */
 
 });
 

@@ -9,6 +9,7 @@ const props = defineProps<{
 const timelines = ref(props.console_timeline.get_timelines());
 const selected_timeline = ref(props.console_timeline.get_selected_timeline());
 
+
 watch(() => props.console_timeline.get_timelines(), (new_timelines) => {
   timelines.value = new_timelines;
 });
@@ -17,25 +18,40 @@ watch(() => props.console_timeline.get_selected_timeline(), (new_selected) => {
   selected_timeline.value = new_selected;
 });
 
+const update_values = () => {
+  timelines.value = props.console_timeline.get_timelines();
+  selected_timeline.value = props.console_timeline.get_selected_timeline();
+};
+
 const select_timeline = (index: number) => {
   props.console_timeline.select_timeline(index);
+
+  update_values();
 };
 
 const add_timeline = () => {
   const name = `Timeline ${timelines.value.length + 1}`;
   props.console_timeline.add_timeline(name);
+
+  update_values();
 };
 
 const remove_timeline = (index: number) => {
   props.console_timeline.remove_timeline(index);
+
+  update_values();
 };
 
 const rename_timeline = (index: number, new_name: string) => {
   props.console_timeline.rename_timeline(index, new_name);
+
+  update_values();
 };
 
 const move_timeline = (from_index: number, to_index: number) => {
   props.console_timeline.move_timeline(from_index, to_index);
+
+  update_values();
 };
 
 const handle_rename = (index: number, event: Event) => {

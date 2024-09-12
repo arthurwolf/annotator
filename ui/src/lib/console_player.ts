@@ -95,6 +95,16 @@ export default class ConsolePlayer {
         return (this._player?.getCurrentTime() || 1) - 1;
 
     }
+ 
+    // Debug method.
+    debug(){
+        return {
+            current_time: this.current_time,
+            playing: this.playing.value,
+            loaded: this.loaded.value,
+            data: this._data
+        };
+    }
 
     
 

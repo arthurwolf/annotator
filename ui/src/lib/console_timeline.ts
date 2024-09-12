@@ -52,6 +52,12 @@ export default class ConsoleTimeline {
         // Set the player.
         this._player = player;
 
+        // Log.
+        console.log(`# ConsoleTimeline constructor.`);
+
+        // Log the call stack until this point.
+        console.trace();
+
     }
 
     // Debug info.
@@ -62,6 +68,8 @@ export default class ConsoleTimeline {
             a            : this._a,
             b            : this._b,
             current_time : this._player.current_time,
+            timelines    : this._timelines.length,
+            selected_timeline: this._selected_timeline,
         }
     }
 
@@ -109,6 +117,8 @@ export default class ConsoleTimeline {
 
     // Setup method, receives the model to be displayed.
     async setup(model:TimelineModel){
+
+        console.log(`# SETUP! `)
 
         // Create the global timeline object.
         this._timeline = new Timeline({id:'timeline'});
@@ -173,6 +183,7 @@ export default class ConsoleTimeline {
         // Set the time.
         if(this._timeline){
             
+            console.log(`ALPHA: Setting time to ${time}`);
             this._timeline.setTime(time*1000);
 
             // Test.
@@ -250,8 +261,10 @@ export default class ConsoleTimeline {
         if (index >= 0 && index < this._timelines.length) {
             this._selected_timeline = index;
             if (this._timeline) {
+
                 this._timeline.selected_row = this._timelines[index].row;
-                this._timeline.redraw();
+
+                if(this._timeline && !this._player.playing) this._timeline.redraw();
             }
         }
     }
@@ -287,7 +300,7 @@ export default class ConsoleTimeline {
             // row?.keyframes.splice(row?.keyframes.indexOf(found.first_keyframe), 1);
 
             // Redraw the timeline.
-            this._timeline?.redraw();
+            if(this._timeline && !this.playing)this._timeline?.redraw();
 
         }
 
@@ -303,7 +316,7 @@ export default class ConsoleTimeline {
         const current_time : number = this._player.current_time;
 
         // Set the timeline time (note that the timeline time is in milliseconds, while the player time is in seconds)
-        this._timeline?.setTime(current_time*1000);
+        if(this._timeline) this._timeline?.setTime(current_time*1000);
 
     }
 
@@ -330,7 +343,8 @@ export default class ConsoleTimeline {
         console.log({a: this._a});
 
         if(this._a && this._timeline) this._timeline.position_a = this._a * 1000;
-        if(this._timeline) this._timeline.redraw();
+
+        if(this._timeline && !this.playing) this._timeline.redraw();
 
 
     }
@@ -344,7 +358,7 @@ export default class ConsoleTimeline {
         console.log({b: this._b})
 
         if(this._b && this._timeline) this._timeline.position_b = this._b * 1000;
-        if(this._timeline) this._timeline.redraw();
+        if(this._timeline && !this.playing) this._timeline.redraw();
 
 
     }
@@ -362,20 +376,11 @@ export default class ConsoleTimeline {
         // Make a sha hash of the JSON.
         const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json)))).map(b => b.toString(16).padStart(2, '0')).join('');
 
-        // Log.
-        console.log({json, hash: hash.toString(), length: json.length});
-
         // Convert the model to the export format.
         const export_data = this.model_to_export(this._model as any);
 
-        // Log.
-        console.log({export_data});
-
         // Convert the export data back into model format.
         const model = this.export_to_model(export_data);
-
-        // Log.
-        console.log({model});
 
         // Make a JSON of the from-export model.
         const json2 = JSON.stringify(model);
@@ -383,17 +388,11 @@ export default class ConsoleTimeline {
         // Make a sha hash of the JSON.
         const hash2 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json2)))).map(b => b.toString(16).padStart(2, '0')).join('');
 
-        // Log.
-        console.log({json2, hash2, length2: json2.length});
-
         // Get the player's data.
         const file_data : string = this._player.data ?? '';
 
         // Get the data as lines.
         const lines : string[] = file_data.split('\n');
-
-        // Log it.
-        console.log({lines});
 
         // Parse the first line as JSON.
         const first_line_json = JSON.parse(lines[0]);
@@ -406,9 +405,6 @@ export default class ConsoleTimeline {
 
         // Join the lines back together as data.
         const modified_data : string = lines.join('\n');
-
-        // Log it.
-        console.log({data2: modified_data});
 
         // Create a blob with the date
         const modified_data_blob = new Blob([modified_data], { type: 'text/plain' });

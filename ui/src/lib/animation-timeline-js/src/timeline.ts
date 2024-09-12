@@ -665,7 +665,7 @@ export class Timeline extends TimelineEventsEmitter {
     const touchEventArgs = args as TouchEvent;
     const isTouch = touchEventArgs.changedTouches && touchEventArgs.changedTouches.length > 0;
     this._currentPos = this._trackMousePos(this._canvas, args);
-    if (!this._isPanStarted && this._selectionRect && this._clickTimeoutIsOver()) {
+    if (!this._isPanStarted  && this._clickTimeoutIsOver()) { // && this._selectionRect
       // TODO: implement selection by rect
       if (this._interactionMode === TimelineInteractionMode.None || this._interactionMode === TimelineInteractionMode.Zoom || this._interactionMode === TimelineInteractionMode.NonInteractivePan) {
         this._selectionRectEnabled = false;
@@ -854,14 +854,14 @@ export class Timeline extends TimelineEventsEmitter {
         } else {
           this._performClick(pos, this._drag);
         }
-      } else if (!this._drag && this._selectionRect && this._selectionRectEnabled) {
+      } else if (!this._drag  && this._selectionRectEnabled) { // && this._selectionRect
         if (this._interactionMode === TimelineInteractionMode.Zoom) {
           // TODO: implement zoom by screen rect.
-        } else if (this._interactionMode !== TimelineInteractionMode.None) {
+        } /*else if (this._interactionMode !== TimelineInteractionMode.None) {
           const keyframes = this._getKeyframesByRectangle(this._selectionRect);
           const selectionMode = args.shiftKey ? TimelineSelectionMode.Append : TimelineSelectionMode.Normal;
           this.select(keyframes, selectionMode);
-        }
+        }*/
       }
 
       this._cleanUpSelection();
@@ -1190,21 +1190,29 @@ export class Timeline extends TimelineEventsEmitter {
       clickArgs.val = clickArgs.snapVal;
     }
 
+
     if (this._startPosMouseArgs) {
+
+      /*
       if (!this._selectionRect) {
         this._selectionRect = {} as DOMRect;
       }
+        */
       const startPos = this._startPosMouseArgs.pos;
       // get the pos with the virtualization:
       const x = Math.floor(startPos.x + ((this._scrollStartPos?.x || 0) - this.scrollLeft));
       const y = Math.floor(startPos.y + ((this._scrollStartPos?.y || 0) - this.scrollTop));
+
+      /*
       this._selectionRect.x = Math.min(x, pos.x);
       this._selectionRect.y = Math.min(y, pos.y);
       this._selectionRect.width = Math.max(x, pos.x) - this._selectionRect.x;
       this._selectionRect.height = Math.max(y, pos.y) - this._selectionRect.y;
+      */
+
       // Once mouse was moved outside of the bounds it's not a click anymore
       if (this._clickAllowed) {
-        this._clickAllowed = this._selectionRect.height <= this._consts.clickThreshold && this._selectionRect.width <= this._consts.clickThreshold;
+       // this._clickAllowed = this._selectionRect.height <= this._consts.clickThreshold && this._selectionRect.width <= this._consts.clickThreshold;
       }
     }
 
@@ -1232,7 +1240,7 @@ export class Timeline extends TimelineEventsEmitter {
     this._scrollAreaClickOrDragStarted = false;
     this._startedDragWithCtrl = false;
     this._startedDragWithShiftKey = false;
-    this._selectionRect = null;
+    //this._selectionRect = null;
     this._clickTimeout = null;
     this._scrollStartPos = null;
     this._isPanStarted = false;
@@ -1260,6 +1268,9 @@ export class Timeline extends TimelineEventsEmitter {
       if (!this._intervalRef) {
         // Repeat move calls to
         this._intervalRef = window.setInterval(() => {
+
+            console.log({my_interval: Date.now()});
+
           this._handleMouseMoveEvent(null);
         }, this._consts.autoPanSpeed);
       }
@@ -2065,6 +2076,8 @@ export class Timeline extends TimelineEventsEmitter {
     }
     this._ctx.save();
     const thickness = 1;
+
+    /*
     if (this._selectionRect && this._selectionRectEnabled) {
       this._ctx.setLineDash([4]);
       this._ctx.lineWidth = this._pixelRatio;
@@ -2072,13 +2085,19 @@ export class Timeline extends TimelineEventsEmitter {
       if (selectionColor) {
         this._ctx.strokeStyle = selectionColor;
       }
+      
       this._ctx.strokeRect(
+
         this._getSharp(this._selectionRect.x, thickness),
         this._getSharp(this._selectionRect.y, thickness),
         Math.floor(this._selectionRect.width),
         Math.floor(this._selectionRect.height),
       );
+      
+
     }
+    */
+
     this._ctx.restore();
   };
 
@@ -2123,13 +2142,13 @@ export class Timeline extends TimelineEventsEmitter {
       this._ctx.stroke();
       this._renderTimelineCap(timeLinePos, y);
 
-      console.log('Position A: ', this.position_a, 'Position B: ', this.position_b, 'Thickness: ', thickness, 'Y: ', y, 'Canvas Height: ', canvasHeight, 'TimeLinePos: ', timeLinePos, 'Y Bottom: ', yBottom)
+      console.log(`# Timeline: value:${this._val}, `, 'Position A: ', this.position_a, 'Position B: ', this.position_b, 'Thickness: ', thickness, 'Y: ', y, 'Canvas Height: ', canvasHeight, 'TimeLinePos: ', timeLinePos, 'Y Bottom: ', yBottom)
 
       if(this.position_b){
         this._ctx.beginPath();
-        console.log(`# Rendering B`);
+        //console.log(`# Rendering B`);
         const position_b =this._toScreenPx(this.position_b);
-        console.log(`# Position B: ${position_b}`);
+        //console.log(`# Position B: ${position_b}`);
         this._ctx.strokeStyle = '#4caf50';
         TimelineUtils.drawLine(this._ctx, position_b, y, position_b, canvasHeight);
         this._ctx.stroke();
@@ -2140,9 +2159,9 @@ export class Timeline extends TimelineEventsEmitter {
       // position_a
       if(this.position_a){
         this._ctx.beginPath();
-        console.log(`# Rendering A`);
+        //console.log(`# Rendering A`);
         const position_a = this._toScreenPx(this.position_a);
-        console.log(`# Position A: ${position_a}`);
+        //console.log(`# Position A: ${position_a}`);
         this._ctx.strokeStyle = '#f44336';
         TimelineUtils.drawLine(this._ctx, position_a, y, position_a, canvasHeight);
         this._ctx.stroke();
@@ -2310,6 +2329,9 @@ export class Timeline extends TimelineEventsEmitter {
     return false;
   };
   public setTime = (val: number): boolean => {
+    
+    console.log(`# setTime: ${val}`);
+
     // don't allow to change time during drag:
     if (this._drag && this._drag.type === TimelineElementType.Timeline) {
       return false;
