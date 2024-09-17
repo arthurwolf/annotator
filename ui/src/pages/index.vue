@@ -124,6 +124,26 @@
                                 </v-btn>
                             </v-col>
 
+                            <!--New Buttons for skipping to the next/previous activity (will do nothing if you are in an active state)-->
+
+                            <v-col cols="auto" v-show="file_loaded">
+                                <v-btn icon="mdi-skip-previous" size="large" @click="console_timeline.skip_over_inactivity(false)">
+                                    <v-icon>mdi-skip-previous</v-icon>
+                                    <v-tooltip activator="parent" location="bottom">
+                                        Skip to previous activity.
+                                    </v-tooltip>
+                                </v-btn>
+                            </v-col>
+
+                            <v-col cols="auto" v-show="file_loaded">
+                                <v-btn icon="mdi-skip-next" size="large" @click="console_timeline.skip_over_inactivity()">
+                                    <v-icon>mdi-skip-next</v-icon>
+                                    <v-tooltip activator="parent" location="bottom">
+                                        Skip past inactivity.
+                                    </v-tooltip>
+                                </v-btn>
+                            </v-col>
+
                         </v-row>
                     </v-container>
 
@@ -196,6 +216,10 @@
                         <li> <strong> <pre> C </pre> </strong> key: create new annotation. </li>
                         <li> <strong> <pre> Space </pre> </strong> key: toggle play/pause. </li>
                         <li> <strong> <pre> Delete </pre> </strong> key: delete annotation at current position in current row. </li>
+                        <li> <strong> <pre> ctrl + Right </pre> </strong> key: skip over inactivity. </li>
+                        <li> <strong> <pre> ctrl + Left </pre> </strong> key: skip over inactivity backwards. </li>
+                        <li> <strong> <pre> Up </pre> </strong> key: skip to next annotation. </li>
+                        <li> <strong> <pre> Down </pre> </strong> key: skip to previous annotation. </li>
                     </ul>
                 </v-card-text>
 
@@ -209,13 +233,6 @@
 
         </v-card>
 
-        <Keypress key-event="keyup" :key-code="35" @success="key_press_end" />
-        <Keypress key-event="keyup" :key-code="65" @success="key_press_a" />
-        <Keypress key-event="keyup" :key-code="66" @success="key_press_b" />
-        <Keypress key-event="keyup" :key-code="67" @success="key_press_c" />
-        <Keypress key-event="keyup" :key-code="32" @success="key_press_space" />
-        <Keypress key-event="keyup" :key-code="46" @success="key_press_delete" />
-
 
     </v-container>
 </template>
@@ -226,7 +243,7 @@
 
 
 // Imports.
-import { Ref, ref, onMounted }                                        from 'vue';
+import { Ref, ref, onMounted, onUnmounted }                                        from 'vue';
 //import { TimelineModel }                                              from "animation-timeline-js";
 //import {  TimelineModel }                                             from "../lib/animation-timeline-js/src/timeline.ts";
 import Keypress from 'vue-keypress';
@@ -265,7 +282,7 @@ let file_loaded : Ref<boolean> = ref(false);
 function key_press_delete(){
 
     // Log.
-    console.log('Delete at current position.');
+    // console.log('Delete at current position.');
 
     // Delete.
     console_timeline.delete_at_current_position();
@@ -273,10 +290,7 @@ function key_press_delete(){
 }
 
 // The "space" key was pressed, if the player is playing, pause it, if it's paused, play.
-function key_press_space(event: Event) {
-
-    // So it doesn't scroll the page.
-    // event.preventDefault();
+function key_press_space() {
 
     // If the player is playing, pause it.
     if (console_player.playing.value) console_player.pause();
@@ -289,10 +303,11 @@ function key_press_space(event: Event) {
 
 // The "end" key was pressed.
 function key_press_end() {
+    // Prevent the default "scroll to bottom" behavior.
 
     // Get the end position and seek to it.
     const end_position : number = console_player.seek_to_end();
-
+    // console.log('End position:', end_position);
     // Move the timeline to the end position.
     console_timeline.set_time(end_position);
 
@@ -303,7 +318,6 @@ function key_press_end() {
 
 // The "A" key was pressed.
 function key_press_a() {
-
     // Set the A keyframe.
     console_timeline.set_a();
 
@@ -323,6 +337,22 @@ function key_press_c() {
     // Create a new annotation.
     console_timeline.new_annotation();
 
+}
+
+function key_press_ctrl_right() {
+    console_timeline.skip_over_inactivity();
+}
+
+function key_press_ctrl_left() {
+    console_timeline.skip_over_inactivity(false);
+}
+
+function key_press_up() {
+    console_timeline.skip_to_next_annotation();
+}
+
+function key_press_down() {
+    console_timeline.skip_to_previous_annotation();
 }
 
 
@@ -361,7 +391,7 @@ async function handle_file_upload(event: Event) {
         const data : string = await read_as_text(file);
 
         // Log.
-        console.log('Asciinema player mounting.');
+        // console.log('Asciinema player mounting.');
 
         // Call the setup_player function with the file content.
         console_player.setup(data);
@@ -439,6 +469,50 @@ onMounted(async () => {
 
     });
 
+    window.addEventListener('keydown', (event) => {
+    switch (event.keyCode) {
+        case 32: // Space key (pause/play)
+            event.preventDefault(); // Prevents default action like scrolling
+            key_press_space();
+            break;
+        case 35: // End key (end of the line)
+            event.preventDefault(); // Prevents default action
+            key_press_end();
+            break;
+        case 65: // A key (set A keyframe)
+            key_press_a();
+            break;
+        case 66: // B key (set B keyframe)
+            key_press_b();
+            break;
+        case 67: // C key (create new annotation)
+            key_press_c();
+            break;
+        case 46: // Delete key (delete annotation)
+            key_press_delete();
+            break;
+        case 39: // ctrl + Right arrow key (skip forward over inactivity)
+            event.preventDefault();
+            key_press_ctrl_right();
+            break;
+        case 37: // ctrl + Left arrow key (skip backward over inactivity)
+            event.preventDefault();
+            key_press_ctrl_left();
+            break;
+        case 38: // Up arrow key (skip to next annotation)
+            event.preventDefault();
+            key_press_up();
+            break;
+        case 40: // Down arrow key (skip to previous annotation)
+            event.preventDefault();
+            key_press_down();
+            break;
+        default:
+            // If none of the cases match, do nothing
+            break;
+    }
+});
+
     // 10 times per second:
     /*
     setInterval(() => {
@@ -449,6 +523,19 @@ onMounted(async () => {
     }, 100);
     */
 
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', key_press_space);
+    window.removeEventListener('keydown', key_press_end);
+    window.removeEventListener('keydown', key_press_a);
+    window.removeEventListener('keydown', key_press_b);
+    window.removeEventListener('keydown', key_press_c);
+    window.removeEventListener('keydown', key_press_delete);
+    window.removeEventListener('keydown', key_press_ctrl_right);
+    window.removeEventListener('keydown', key_press_ctrl_left);
+    window.removeEventListener('keydown', key_press_up);
+    window.removeEventListener('keydown', key_press_down);
 });
 
 // Function to handle the textarea text change.
