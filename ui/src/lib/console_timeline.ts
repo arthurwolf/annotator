@@ -41,8 +41,8 @@ export default class ConsoleTimeline {
     private _a : number|null = null;
     private _b : number|null = null;
     private _selection_callback : Function|null = null;
-    private _timelines: { name: string; row: number }[] = [
-        { name: 'Timeline Level 0', row: 0 }
+    private _timelines: { name: string }[] = [  // row: number  TODO: ASK, why did we need to add row here?
+        { name: 'Timeline Level 0' }            // row: 0
     ];
     private _selected_timeline: number = 0;
     private allEvents: PlayerEvent[] = [];
@@ -271,9 +271,10 @@ export default class ConsoleTimeline {
             this._selected_timeline = index;
             if (this._timeline) {
 
-                this._timeline.selected_row = this._timelines[index].row;
+                // this._timeline.selected_row = this._timelines[index].row;
+                this._timeline.selected_row = this._selected_timeline;
 
-                if(this._timeline) this._timeline.redraw();  //&& !this._player.playing
+                if(this._timeline && !this.playing) this._timeline.redraw();
             }
         }
     }
@@ -602,8 +603,9 @@ export default class ConsoleTimeline {
 
     // Add new methods for timeline management
     add_timeline(name: string) {
-        const new_row = this._model?.rows.length ?? 0;
-        this._timelines.push({ name, row: new_row });
+        // const new_row = this._model?.rows.length ?? 0;
+        // this._timelines.push({ name, row: new_row });
+        this._timelines.push({ name });
         this._model?.rows.push({ keyframes: [] });
         this._timeline?.setModel(this._model as TimelineModel);
     }
