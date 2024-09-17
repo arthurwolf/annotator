@@ -1,6 +1,4 @@
-<template>
-    <!-- Container for UI components -->
-    <v-container>
+
 <template>
     <!-- Container for UI components -->
     <v-container>
@@ -193,12 +191,6 @@
                 </v-col>
             </v-row>
         </v-card>
-    </v-container>
-</template>
-
-        </v-card>
-
-
     </v-container>
 </template>
 
