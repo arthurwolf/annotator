@@ -27,10 +27,13 @@ type ExportData = {
     layers: Layer[];
 };
 
+type PlayerEvent = [number, string, string];  // [time, type, data] (based on formatting in asciinema files)
+
 // Class.
 export default class ConsoleTimeline {
 
     // Properties.
+    
     private _timeline : Timeline | null = null;
     private _model : TimelineModel | null = null;
     private _player : ConsolePlayer;
@@ -44,6 +47,7 @@ export default class ConsoleTimeline {
         { name: 'Far', row: 2 }
     ];
     private _selected_timeline: number = 0;
+    private allEvents: PlayerEvent[] = [];
 
 
     // Constructor.
@@ -53,7 +57,7 @@ export default class ConsoleTimeline {
         this._player = player;
 
         // Log.
-        console.log(`# ConsoleTimeline constructor.`);
+        // console.log(`# ConsoleTimeline constructor.`);
 
         // Log the call stack until this point.
         console.trace();
@@ -87,6 +91,9 @@ export default class ConsoleTimeline {
         // Attempt to parse the first line as JSON.
         const first_line_json = JSON.parse(lines[0]);
 
+        // Also parse all the events so that we can track inactivity
+        this.allEvents = this.parse_events_from_file(lines);
+
         // If it does not have the librecode_annotations key, setup with a default model.
         if(!first_line_json.librecode_annotations){
 
@@ -118,10 +125,13 @@ export default class ConsoleTimeline {
     // Setup method, receives the model to be displayed.
     async setup(model:TimelineModel){
 
-        console.log(`# SETUP! `)
+        // console.log(`# SETUP! `)
+
 
         // Create the global timeline object.
-        this._timeline = new Timeline({id:'timeline'});
+        this._timeline = new Timeline({
+            id:'timeline',
+        });
 
         // Set the original detail level/row.
         this.select_timeline(0);
@@ -148,6 +158,9 @@ export default class ConsoleTimeline {
             // Set the time in the player.
             this._player?.seek(time_ms/1000);
 
+                // Check for inactivity and skip to the next activity
+            this.skip_over_inactivity(true, time_ms);
+
             // Call the selection callback.
             if(this._selection_callback) this._selection_callback(this.get_selected_annotation(time_ms/1000));
 
@@ -155,13 +168,13 @@ export default class ConsoleTimeline {
 
         // When a keyframe is selected.
         this._timeline.onSelected((args: any) => {
-            console.log(`Selected keyframe:`);
-            console.log(args);
+            // console.log(`Selected keyframe:`);
+            // console.log(args);
         });
 
         this._timeline.onMouseDown((args: any) => {
-            console.log(`Mouse down:`);
-            console.log(args);
+            // console.log(`Mouse down:`);
+            // console.log(args);
         });
 
 
@@ -183,15 +196,9 @@ export default class ConsoleTimeline {
         // Set the time.
         if(this._timeline){
             
-            console.log(`ALPHA: Setting time to ${time}`);
+            // console.log(`ALPHA: Setting time to ${time}`);
             this._timeline.setTime(time*1000);
-
-            // Test.
-            //this._timeline.scrollToRightBounds()
-
-            //this._timeline.redraw();
-
-            //this._timeline.rescale();
+            this._timeline.redraw();
 
         }
 
@@ -242,7 +249,7 @@ export default class ConsoleTimeline {
         // Get the currently selected time.
         const time : number = this._player.current_time;
 
-        console.log({set_text_time: time, text, model: this._model});
+        // console.log({set_text_time: time, text, model: this._model});
 
         const found = this.find_group_and_first_keyframe(time);
 
@@ -275,12 +282,12 @@ export default class ConsoleTimeline {
         // Get the currently selected time.
         const time : number = this._player.current_time;
 
-        console.log({time});
+        // console.log({time});
 
         // Find the current one.
         const found = this.find_group_and_first_keyframe(time);
 
-        console.log({found});
+        // console.log({found});
 
         // Delete it from the rows.
         if(found){
@@ -288,7 +295,7 @@ export default class ConsoleTimeline {
             // Get the row.
             const row = this._model?.rows[this._selected_timeline];
 
-            console.log({row});
+            // console.log({row});
 
             // If it's null or undefined, skip.
             if(!row || !row.keyframes) return;
@@ -340,7 +347,7 @@ export default class ConsoleTimeline {
         // Set the A value.
         this._a = this._player.current_time;
 
-        console.log({a: this._a});
+        // console.log({a: this._a});
 
         if(this._a && this._timeline) this._timeline.position_a = this._a * 1000;
 
@@ -355,7 +362,7 @@ export default class ConsoleTimeline {
         // Set the B value.
         this._b = this._player.current_time;
 
-        console.log({b: this._b})
+        // console.log({b: this._b})
 
         if(this._b && this._timeline) this._timeline.position_b = this._b * 1000;
         if(this._timeline && !this.playing) this._timeline.redraw();
@@ -367,8 +374,8 @@ export default class ConsoleTimeline {
     async download(){
 
         // Log.
-        console.log(`# Download.`);
-        console.log({model:this._model});
+        // console.log(`# Download.`);
+        // console.log({model:this._model});
 
         // Make JSON from the model.
         const json = JSON.stringify(this._model);
@@ -542,7 +549,7 @@ export default class ConsoleTimeline {
         // Using only methods available in the browser, generate a sha256 unique ID.
         const id = crypto.getRandomValues(new Uint32Array(4)).join('-');
 
-        console.log(this);
+        // console.log(this);
 
         // For the beginning time, use A if it's set,        // use the end of the previous annotation if it's not.
         const beginning_time : number = this._a ?? 0;
@@ -550,7 +557,7 @@ export default class ConsoleTimeline {
         // For the end time, use B if it's set, use the current time if it's not.
         const end_time : number = this._b ?? this._player.current_time;
 
-        console.log({beginning_time, end_time, a: this._a, b: this._b});
+        // console.log({beginning_time, end_time, a: this._a, b: this._b});
 
         // Create the annotation.
         this._model?.rows[this._selected_timeline]?.keyframes?.push(
@@ -558,7 +565,7 @@ export default class ConsoleTimeline {
             {val: end_time       * 1000, group: id}
         );
 
-        console.log(this._model);
+        // console.log(this._model);
 
         // Update the model.
         if(this._model) this._timeline?.setModel(this._model);
@@ -609,6 +616,138 @@ export default class ConsoleTimeline {
             this._timeline?.setModel(this._model as TimelineModel);
         }
     }
+    
+    // TESTSTUFF
+        // Method to skip to the next annotation (keyframe)
+    skip_to_next_annotation() {
+        const currentTime = this._player.current_time;
+        const nextKeyframe = this.find_next_keyframe(currentTime);
+
+        if (nextKeyframe) {
+            // Seek to the next keyframe's time
+            this._player.seek(nextKeyframe.val / 1000);
+            this.set_time(nextKeyframe.val / 1000);
+
+            if (this._timeline) {
+                this._timeline.setTime(nextKeyframe.val); // Set the timeline's time to match the keyframe
+                this._timeline.redraw(); // Redraw
+            }
+
+            this._player.pause(); //Pause the player TODO: Ask if we should pause the player or not after skipping
+        }
+    }
+
+    // Method to skip to the previous annotation (keyframe)
+    skip_to_previous_annotation() {
+        const currentTime = this._player.current_time;
+        const previousKeyframe = this.find_previous_keyframe(currentTime);
+
+        if (previousKeyframe) {
+            // Seek to the previous keyframe's time
+            this._player.seek(previousKeyframe.val / 1000);
+            this.set_time(previousKeyframe.val / 1000);
+
+            this._player.pause(); //Pause the player TODO: Ask if we should pause the player or not after skipping
+        }
+    }
+
+    // Method to find the next keyframe after the current position.
+    find_next_keyframe(time: number) {
+        const row = this._model?.rows[this._selected_timeline];  // Get the row data
+
+        if (!row || !row.keyframes) return null;
+
+        // Filter keyframes that occur after the current time (convert to milliseconds)
+        const keyframes = row.keyframes.filter(k => k.val > time * 1000);
+        keyframes.sort((a, b) => a.val - b.val);  // Sort in ascending order by time
+        // Return the next keyframe if found, otherwise return null
+        return keyframes.length > 0 ? keyframes[0] : null;
+    }
+
+    // Method to find the previous keyframe before the current position.
+    find_previous_keyframe(time: number) {
+        const row = this._model?.rows[this._selected_timeline];
+
+        if (!row || !row.keyframes) return null;
+
+        const keyframes = row.keyframes.filter(k => k.val < time * 1000);
+        keyframes.sort((a, b) => b.val - a.val); // Sort descending
+
+        return keyframes.length > 0 ? keyframes[0] : null;
+    }
+
+   // dynamically skip over inactivity, forwards or backwards
+    skip_over_inactivity(forward = true, inactivity_threshold = 10000) {
+        const current_time_ms = this._player.current_time * 1000;  // Access current time directly
+
+        // Check if events are available
+        if (!this.allEvents || this.allEvents.length === 0){
+            console.log("No events found to skip over inactivity.");
+            return;
+        }
+
+        // Determine the direction of search
+        let events: PlayerEvent[] = [];
+        if (forward) {
+            // Find future events that occur after the current time
+            events = this.allEvents.filter(event => event[0] * 1000 > current_time_ms);
+        } else {
+            // Find past events that occurred before the current time
+            events = this.allEvents.filter(event => event[0] * 1000 < current_time_ms).reverse();
+        }
+
+        if (events.length === 0) {
+            console.log(`No future/past events to skip to.`);
+            return;
+        }
+
+        // Look for the first event that is more than the inactivity threshold away
+        for (let i = 0; i < events.length; i++) {
+            const nearestEvent = events[i];
+            const nearestEventTimeMs = nearestEvent[0] * 1000;
+            const timeGap = Math.abs(nearestEventTimeMs - current_time_ms);  // Calculate the time gap
+
+            if (timeGap > inactivity_threshold) {
+                console.log(`Skipping to nearest future/past event...`, nearestEventTimeMs);
+
+                // Ensure we do not seek to an invalid time (like 0)
+                if (nearestEvent[0] > 0) {
+                    this._player.seek(nearestEvent[0]);  // Seek player time 
+                    this.set_time(nearestEvent[0]);      // Sync timeline
+                    this._player.pause();  // Pause after skipping
+                } else {
+                    console.log("Invalid event time, cannot skip to the event.");
+                }
+                return;  // Exit once we've skipped to the desired event
+            }
+        }
+
+        console.log(`No significant inactivity found.`);
+    }
+
+        // Helper function to parse input/output events from file lines
+    parse_events_from_file(lines: string[]): any[] {
+        console.log("Parsing events from file...");
+        
+        const events: PlayerEvent[] = [];
+        let num = 0;
+
+        // Start from the second line to skip json annotations and parse the rest
+        for (let i = 1; i < lines.length; i++) {
+            try {
+                const event = JSON.parse(lines[i]);
+                event[0] = Number(event[0]); // Convert time to number
+                events.push(event);
+            } catch (err) {
+                num = num + 1;
+            }
+        }
+
+        console.log(num, "events skipped.", lines.length, "total events parsed.");
+
+        return events;
+    }
+    
 
     get_timelines() {
         return this._timelines;
