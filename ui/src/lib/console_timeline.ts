@@ -42,9 +42,7 @@ export default class ConsoleTimeline {
     private _b : number|null = null;
     private _selection_callback : Function|null = null;
     private _timelines: { name: string; row: number }[] = [
-        { name: 'Near', row: 0 },
-        { name: 'Medium', row: 1 },
-        { name: 'Far', row: 2 }
+        { name: 'Timeline Level 0', row: 0 }
     ];
     private _selected_timeline: number = 0;
     private allEvents: PlayerEvent[] = [];
@@ -100,9 +98,7 @@ export default class ConsoleTimeline {
             // Setup with a default model.
             await this.setup({ rows: 
                 [
-                    { keyframes: [] },
-                    { keyframes: [] },
-                    { keyframes: [] },
+                    { keyframes: [] }
                 ] 
             });
 
@@ -277,7 +273,7 @@ export default class ConsoleTimeline {
 
                 this._timeline.selected_row = this._timelines[index].row;
 
-                if(this._timeline && !this._player.playing) this._timeline.redraw();
+                if(this._timeline) this._timeline.redraw();  //&& !this._player.playing
             }
         }
     }
