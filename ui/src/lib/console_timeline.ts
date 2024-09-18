@@ -151,8 +151,8 @@ export default class ConsoleTimeline {
             // Call the selection callback.
             if(this._selection_callback) this._selection_callback(this.get_selected_annotation(time_ms/1000));
 
-            // Update local storage
-            localStorage.setItem("previous_session", await this.get_session_string());
+             // Update local storage
+             localStorage.setItem("previous_session", await this.get_session_string());
 
         });
 
@@ -355,6 +355,7 @@ export default class ConsoleTimeline {
         // Update localStorage
         localStorage.setItem("previous_session", await this.get_session_string());
 
+
     }
 
     // Set the B value.
@@ -370,6 +371,7 @@ export default class ConsoleTimeline {
 
         // Update localStorage
         localStorage.setItem("previous_session", await this.get_session_string());
+
 
     }
 
