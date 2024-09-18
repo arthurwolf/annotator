@@ -380,7 +380,7 @@ export default class ConsoleTimeline {
 
     }
 
-    // Get the file contents of the current annotation session
+    // Returns a string representing an Asciinema JSON with the current annotations
     async get_session_string() {
 
         // Make JSON from the model.
@@ -430,7 +430,7 @@ export default class ConsoleTimeline {
         console.log(`# Download.`);
         console.log({model:this._model});
 
-        // Join the lines back together as data.
+        // Get session string
         const modified_data = await this.get_session_string();
 
         // Create a blob with the date
