@@ -144,7 +144,7 @@ export default class ConsoleTimeline {
         this._timeline.setModel(this._model);
 
         // When the time changes (event)
-        this._timeline.onTimeChanged((args: any) => {
+        this._timeline.onTimeChanged(async (args: any) => {
 
             // If the player is playing, exit.
             if(this.playing) return;
@@ -163,6 +163,9 @@ export default class ConsoleTimeline {
 
             // Call the selection callback.
             if(this._selection_callback) this._selection_callback(this.get_selected_annotation(time_ms/1000));
+
+             // Update local storage
+             localStorage.setItem("previous_session", await this.get_session_string());
 
         });
 
@@ -244,7 +247,7 @@ export default class ConsoleTimeline {
     }
 
     // Set the text of the currently selected keyframe/group.
-    set_text(text:string){
+    async set_text(text:string){
 
         // Get the currently selected time.
         const time : number = this._player.current_time;
@@ -255,6 +258,9 @@ export default class ConsoleTimeline {
 
         // Set the value.
         if(found) found.first_keyframe.text = text;
+
+        // Update localStorage
+        localStorage.setItem("previous_session", await this.get_session_string());
 
     }
 
@@ -342,7 +348,7 @@ export default class ConsoleTimeline {
     }
 
     // Set the A value.
-    set_a(){
+    async set_a(){
 
         // Set the A value.
         this._a = this._player.current_time;
@@ -353,11 +359,13 @@ export default class ConsoleTimeline {
 
         if(this._timeline && !this.playing) this._timeline.redraw();
 
+        // Update localStorage
+        localStorage.setItem("previous_session", await this.get_session_string());
 
     }
 
     // Set the B value.
-    set_b(){
+    async set_b(){
 
         // Set the B value.
         this._b = this._player.current_time;
@@ -367,15 +375,13 @@ export default class ConsoleTimeline {
         if(this._b && this._timeline) this._timeline.position_b = this._b * 1000;
         if(this._timeline && !this.playing) this._timeline.redraw();
 
+        // Update localStorage
+        localStorage.setItem("previous_session", await this.get_session_string());
 
     }
 
-    // Download the annotated file.
-    async download(){
-
-        // Log.
-        // console.log(`# Download.`);
-        // console.log({model:this._model});
+    // Returns a string representing an Asciinema JSON with the current annotations
+    async get_session_string() {
 
         // Make JSON from the model.
         const json = JSON.stringify(this._model);
@@ -412,6 +418,20 @@ export default class ConsoleTimeline {
 
         // Join the lines back together as data.
         const modified_data : string = lines.join('\n');
+
+        return modified_data;
+
+    }
+
+    // Download the annotated file.
+    async download(){
+
+        // Log.
+        console.log(`# Download.`);
+        console.log({model:this._model});
+
+        // Get session string
+        const modified_data = await this.get_session_string();
 
         // Create a blob with the date
         const modified_data_blob = new Blob([modified_data], { type: 'text/plain' });
@@ -544,7 +564,7 @@ export default class ConsoleTimeline {
     }
 
     // Create a new annotation.
-    new_annotation(){
+    async new_annotation(){
 
         // Using only methods available in the browser, generate a sha256 unique ID.
         const id = crypto.getRandomValues(new Uint32Array(4)).join('-');
@@ -578,6 +598,9 @@ export default class ConsoleTimeline {
         if(this._timeline) this._timeline.position_a = null;
         if(this._timeline) this._timeline.position_b = null;
         if(this._timeline) this._timeline.redraw();
+
+        // Update localStorage
+        localStorage.setItem("previous_session", await this.get_session_string());
 
     }
 

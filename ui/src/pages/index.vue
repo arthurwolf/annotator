@@ -359,6 +359,9 @@ async function handle_file_upload(event: Event) {
         // Set the file loaded flag.
         file_loaded.value = true;
 
+        // Save into local storage
+        localStorage.setItem("previous_session", data);
+
     }
 }
 
@@ -405,6 +408,8 @@ async function read_as_text(file: File) : Promise<string> {
 
 // On mounted hook
 onMounted(async () => {
+
+    show_popup();
 
     // Set up the timeline selection event.
     console_timeline.on_selection((selection) => {
@@ -500,6 +505,23 @@ function text_changed(event) {
 
     console_timeline.set_text(event?.target?.value)
 
+}
+
+// Show the "Would you like to continue from your previous session?"popup after a refresh
+function show_popup() {
+    const result = confirm("Do you want to continue from the previous session?");
+    if (result) load_session();
+    else localStorage.setItem("previous_session", "");
+}
+
+// when "Yes" is clicked in the confirm popup
+async function load_session() {
+    const previous_session = localStorage.getItem("previous_session");
+    if (previous_session) {
+        console_player.setup(previous_session);
+        await console_timeline.attempt_data_import(previous_session);
+        file_loaded.value = true;
+    }
 }
 
 </script>
