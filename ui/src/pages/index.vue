@@ -248,7 +248,6 @@ function key_press_delete(){
 
 // The "space" key was pressed, if the player is playing, pause it, if it's paused, play.
 function key_press_space() {
-
     // If the player is playing, pause it.
     if (console_player.playing.value) console_player.pause();
 
@@ -432,8 +431,10 @@ onMounted(async () => {
     });
 
     window.addEventListener('keydown', (event) => {
+    const annotationInput = document.getElementById('annotation');  
     switch (event.keyCode) {
         case 32: // Space key (pause/play)
+            if (document.activeElement === annotationInput) return;
             event.preventDefault(); // Prevents default action like scrolling
             key_press_space();
             break;
