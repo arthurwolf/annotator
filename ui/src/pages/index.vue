@@ -434,7 +434,7 @@ onMounted(async () => {
     const annotationInput = document.getElementById('annotation');  
     switch (event.keyCode) {
         case 32: // Space key (pause/play)
-            if (document.activeElement === annotationInput) return;
+            if (document.activeElement === annotationInput) return; //prevents space toggling play/pause when typing in the annotation area
             event.preventDefault(); // Prevents default action like scrolling
             key_press_space();
             break;
