@@ -1,8 +1,8 @@
 
 <template>
     <!-- Container for UI components -->
-    <v-container>
-        <v-card class="mx-auto my-8" elevation="16" max-width="2048">
+    <v-container fluid class="pa-0 ma-0" style="width: 100vw; height: auto;">
+        <v-card class="ma-0 pa-0" elevation="16" style="width: 100%; height: auto;">
             <v-row>
                 <v-col>
                     <v-card-item>
