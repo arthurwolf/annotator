@@ -204,6 +204,7 @@ import { Ref, ref, onMounted, onUnmounted }                                     
 //import { TimelineModel }                                              from "animation-timeline-js";
 //import {  TimelineModel }                                             from "../lib/animation-timeline-js/src/timeline.ts";
 import Keypress from 'vue-keypress';
+import { show_popup } from '../lib/persist_session.ts' 
 
 
 // Our classes.
@@ -408,7 +409,7 @@ async function read_as_text(file: File) : Promise<string> {
 // On mounted hook
 onMounted(async () => {
 
-    show_popup();
+    show_popup(console_player, console_timeline, file_loaded);
 
     // Set up the timeline selection event.
     console_timeline.on_selection((selection) => {
@@ -507,23 +508,6 @@ function text_changed(event) {
 
     console_timeline.set_text(event?.target?.value)
 
-}
-
-// Show the "Would you like to continue from your previous session?"popup after a refresh
-function show_popup() {
-    const result = confirm("Do you want to continue from the previous session?");
-    if (result) load_session();
-    else localStorage.setItem("previous_session", "");
-}
-
-// when "Yes" is clicked in the confirm popup
-async function load_session() {
-    const previous_session = localStorage.getItem("previous_session");
-    if (previous_session) {
-        console_player.setup(previous_session);
-        await console_timeline.attempt_data_import(previous_session);
-        file_loaded.value = true;
-    }
 }
 
 </script>
