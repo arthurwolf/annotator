@@ -1,4 +1,3 @@
-
 <template>
     <!-- Container for UI components -->
     <v-container fluid class="pa-0 ma-0" style="width: 100vw; height: auto;">
@@ -191,21 +190,37 @@
                 </v-col>
             </v-row>
         </v-card>
+
+
+        <!-- Vuetify dialog for the previous session prompt -->
+        <v-dialog v-model="show_previous_session_dialog" max-width="500">
+            <v-card>
+                <v-card-title class="headline">Continue Previous Session?</v-card-title>
+                <v-card-text>
+                    Do you want to continue from the previous session?
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" text @click="continue_previous_session">
+                        Yes
+                    </v-btn>
+                    <v-btn color="primary" text @click="discard_previous_session">
+                        No
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
     </v-container>
+
+
 </template>
 
 <script setup lang="ts">
 
-//                     
-
-
 // Imports.
 import { Ref, ref, onMounted, onUnmounted, nextTick }                                        from 'vue';
-//import { TimelineModel }                                              from "animation-timeline-js";
-//import {  TimelineModel }                                             from "../lib/animation-timeline-js/src/timeline.ts";
-import Keypress from 'vue-keypress';
-import { show_popup } from '../lib/persist_session' 
-
+// import { show_popup } from '../lib/persist_session' 
 
 // Our classes.
 import ConsolePlayer from '../lib/console_player'
@@ -237,6 +252,9 @@ let file_loaded : Ref<boolean> = ref(false);
 
 // Reference to the textarea element
 //const textarea = ref<null | HTMLTextAreaElement>(null);
+
+// Reactive variable to control the visibility of the dialog
+const show_previous_session_dialog = ref(false);
 
 // Delete at the current position.
 function key_press_delete(){
@@ -467,8 +485,11 @@ const keydownHandler = (event: KeyboardEvent) => {
 
 // On mounted hook
 onMounted(async () => {
+    const previous_session = localStorage.getItem("previous_session");
 
-    show_popup(console_player, console_timeline, file_loaded);
+    if (previous_session) {
+        show_previous_session_dialog.value = true;
+    }
 
     // Set up the timeline selection event.
     console_timeline.on_selection((selection) => {
@@ -513,6 +534,24 @@ function text_changed(event) {
 
     console_timeline.set_text(event?.target?.value)
 
+}
+
+// Methods to handle the user's response to the dialog
+async function continue_previous_session() {
+    const previous_session = localStorage.getItem("previous_session");
+
+    if (previous_session) {
+        console_player.setup(previous_session);
+        await console_timeline.attempt_data_import(previous_session);
+        file_loaded.value = true;
+    }
+
+    show_previous_session_dialog.value = false;
+}
+
+function discard_previous_session() {
+    localStorage.removeItem("previous_session");
+    show_previous_session_dialog.value = false;
 }
 
 </script>
