@@ -204,7 +204,7 @@ import { Ref, ref, onMounted, onUnmounted }                                     
 //import { TimelineModel }                                              from "animation-timeline-js";
 //import {  TimelineModel }                                             from "../lib/animation-timeline-js/src/timeline.ts";
 import Keypress from 'vue-keypress';
-import { show_popup } from '../lib/persist_session.ts' 
+import { show_popup } from '../lib/persist_session' 
 
 
 // Our classes.

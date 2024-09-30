@@ -2,10 +2,10 @@
 
 // Imports.
 import ConsolePlayer                                          from "./console_player";
-import { ref }                                                from 'vue';
+import { ref, Ref }                                          from 'vue';
 
 // @ts-ignore TODO: Fix this, this is due to importing the local copy of the lib in a weird way.
-import { Timeline, TimelineInteractionMode, TimelineModel }   from "./animation-timeline-js/src/animation-timeline.ts";
+import { Timeline, TimelineInteractionMode, TimelineModel, TimelineRow }   from "./animation-timeline-js/src/animation-timeline";
 
 // Ours.
 
@@ -19,13 +19,22 @@ type Annotation = {
 
 type Layer = {
     annotations: Annotation[];
+    title: string;
 };
 
 type ExportData = {
     note: string;
     version: number;
     layers: Layer[];
-};
+}
+
+// TimelineLayer extends TimelineRow but adds a "title" property.
+type TimelineLayer = TimelineRow & { title: string };
+
+// CustomTimelineModel extends TimelineModel but uses TimelineLayer instead of TimelineRow.
+type CustomTimelineModel = {
+    rows: TimelineLayer[];
+}
 
 type PlayerEvent = [number, string, string];  // [time, type, data] (based on formatting in asciinema files)
 
@@ -35,17 +44,20 @@ export default class ConsoleTimeline {
     // Properties.
     
     private _timeline : Timeline | null = null;
-    private _model : TimelineModel | null = null;
+    private _model : CustomTimelineModel | null = null;
     private _player : ConsolePlayer;
     public mode = ref<string>('pan');
     private _a : number|null = null;
     private _b : number|null = null;
     private _selection_callback : Function|null = null;
-    private _timelines: { name: string }[] = [  // row: number  TODO: ASK, why did we need to add row here?
+    /*private _timelines: { name: string }[] = [  // row: number  TODO: ASK, why did we need to add row here?
         { name: 'Timeline Level 0' }            // row: 0
-    ];
+    ];*/
     private _selected_timeline: number = 0;
     private allEvents: PlayerEvent[] = [];
+
+    // Reactive timelines property
+    public timelines: Ref<TimelineLayer[]> = ref([]);
 
 
     // Constructor.
@@ -70,7 +82,7 @@ export default class ConsoleTimeline {
             a            : this._a,
             b            : this._b,
             current_time : this._player.current_time,
-            timelines    : this._timelines.length,
+            //timelines    : this._timelines.length,
             selected_timeline: this._selected_timeline,
         }
     }
@@ -133,7 +145,7 @@ export default class ConsoleTimeline {
         this.select_timeline(0);
 
         // Set the model.
-        this._model = model;
+        this._model = model as CustomTimelineModel;
 
         // Set up the timeline model (data).
         // TODO: Get this from the file if the data is in the file.
@@ -154,8 +166,9 @@ export default class ConsoleTimeline {
             // Set the time in the player.
             this._player?.seek(time_ms/1000);
 
-                // Check for inactivity and skip to the next activity
-            this.skip_over_inactivity(true, time_ms);
+            // Check for inactivity and skip to the next activity
+            // DEBUG: Why was this here at all in the first place ??? 
+            //this.skip_over_inactivity(true, time_ms);
 
             // Call the selection callback.
             if(this._selection_callback) this._selection_callback(this.get_selected_annotation(time_ms/1000));
@@ -185,6 +198,9 @@ export default class ConsoleTimeline {
 
         }, 1000 / 10);
 
+        // Update the reactive timelines property
+        this.timelines.value = this._model.rows;
+
     }
 
     // Set the time of the timeline.
@@ -196,6 +212,7 @@ export default class ConsoleTimeline {
         if(this._timeline){
             
             // console.log(`ALPHA: Setting time to ${time}`);
+            console.log({set_time_time: time, model: this._model});
             this._timeline.setTime(time*1000);
             this._timeline.redraw();
 
@@ -205,6 +222,8 @@ export default class ConsoleTimeline {
 
     // Method to find the group and first keyframe based on a time.
     find_group_and_first_keyframe(time: number) {
+
+        // TODO: Only find it in the currently selected timeline/layer.
 
         // Search function.
         const search = (keyframes, time: number) => {
@@ -267,7 +286,12 @@ export default class ConsoleTimeline {
 
     // Replace set_detail method with select_timeline
     select_timeline(index: number) {
-        if (index >= 0 && index < this._timelines.length) {
+
+        // If there's no model, abort.
+        if (!this._model) return;
+
+        // If the index is within the bounds of the model, select it.
+        if (index >= 0 && index < this._model.rows.length) {
             this._selected_timeline = index;
             if (this._timeline) {
 
@@ -381,22 +405,26 @@ export default class ConsoleTimeline {
     async get_session_string() {
 
         // Make JSON from the model.
-        const json = JSON.stringify(this._model);
+        //const json = JSON.stringify(this._model);
 
         // Make a sha hash of the JSON.
-        const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json)))).map(b => b.toString(16).padStart(2, '0')).join('');
+        //const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json)))).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        console.log({get_session_string_model: this._model});
 
         // Convert the model to the export format.
         const export_data = this.model_to_export(this._model as any);
 
+        console.log({get_session_string_export_data: export_data});
+
         // Convert the export data back into model format.
-        const model = this.export_to_model(export_data);
+        //const model = this.export_to_model(export_data);
 
         // Make a JSON of the from-export model.
-        const json2 = JSON.stringify(model);
+        //const json2 = JSON.stringify(model);
 
         // Make a sha hash of the JSON.
-        const hash2 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json2)))).map(b => b.toString(16).padStart(2, '0')).join('');
+        //const hash2 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json2)))).map(b => b.toString(16).padStart(2, '0')).join('');
 
         // Get the player's data.
         const file_data : string = this._player.data ?? '';
@@ -462,6 +490,7 @@ export default class ConsoleTimeline {
         for (const layer of export_data.layers) {
             // Initialize a row with an empty array of keyframes.
             const row: any = {
+                title: layer.title,
                 keyframes: []
             };
 
@@ -494,7 +523,7 @@ export default class ConsoleTimeline {
 
 
     // Convert the model to the export format.
-    model_to_export(model:TimelineModel){
+    model_to_export(model:CustomTimelineModel){
 
         // Create the export object.
         const export_data : ExportData = {
@@ -509,9 +538,10 @@ export default class ConsoleTimeline {
             // Create the layer.
             const layer : Layer = {
                 annotations: [],
+                title: row.title,
             };
 
-            // List of group names.
+            // List of group names
             const groups : string[] = [];
 
             if(row.keyframes){ 
@@ -602,44 +632,75 @@ export default class ConsoleTimeline {
     }
 
     // Add new methods for timeline management
-    add_timeline(name: string) {
+    add_timeline(name: string|null) {
         // const new_row = this._model?.rows.length ?? 0;
         // this._timelines.push({ name, row: new_row });
-        this._timelines.push({ name });
-        this._model?.rows.push({ keyframes: [] });
+        // this._timelines.push({ name });
+
+        // If there's no model, abort.
+        if (!this._model) return; 
+
+        // Add a new row to the model.
+        this._model.rows.push({ keyframes: [], title: name ?? "default" });
+
+        // Update the timeline.
         this._timeline?.setModel(this._model as TimelineModel);
+
+        // Update the reactive timelines property
+        this.timelines.value = this._model.rows;
     }
 
     remove_timeline(index: number) {
-        if (index >= 0 && index < this._timelines.length) {
-            this._timelines.splice(index, 1);
-            this._model?.rows.splice(index, 1);
+
+        // If there's no model, abort.
+        if (!this._model) return;
+
+        // Remove the row.
+        if (index >= 0 && index < this._model.rows.length) {
+            this._model.rows.splice(index, 1);
             this._timeline?.setModel(this._model as TimelineModel);
-            if (this._selected_timeline >= this._timelines.length) {
-                this.select_timeline(this._timelines.length - 1);
+            if (this._selected_timeline >= this._model?.rows.length) {
+                this.select_timeline(this._model?.rows.length - 1);
             }
         }
+
+        // Update the reactive timelines property
+        this.timelines.value = this._model.rows;
     }
 
     rename_timeline(index: number, new_name: string) {
-        if (index >= 0 && index < this._timelines.length) {
-            this._timelines[index].name = new_name;
+
+        // If there's no model, abort.
+        if (!this._model) return;
+
+        // Rename the row.
+        if (index >= 0 && index < this._model.rows.length) {
+            this._model.rows[index].title = new_name;
         }
+
+        // Update the reactive timelines property
+        this.timelines.value = this._model.rows;
     }
 
     move_timeline(from_index: number, to_index: number) {
-        if (from_index >= 0 && from_index < this._timelines.length &&
-            to_index >= 0 && to_index < this._timelines.length) {
-            const [timeline] = this._timelines.splice(from_index, 1);
-            this._timelines.splice(to_index, 0, timeline);
-            const [row] = this._model?.rows.splice(from_index, 1) ?? [];
-            this._model?.rows.splice(to_index, 0, row);
+
+        // If there's no model, abort.
+        if (!this._model) return;
+
+        // Move the row.
+        if (from_index >= 0 && from_index < this._model.rows.length && to_index >= 0 && to_index < this._model.rows.length) {
+
+            const [row] = this._model.rows.splice(from_index, 1);
+            this._model.rows.splice(to_index, 0, row);
             this._timeline?.setModel(this._model as TimelineModel);
+
         }
+
+        // Update the reactive timelines property
+        this.timelines.value = this._model.rows;
     }
     
-    // TESTSTUFF
-        // Method to skip to the next annotation (keyframe)
+    // Method to skip to the next annotation (keyframe)
     skip_to_next_annotation() {
         const currentTime = this._player.current_time;
         const nextKeyframe = this.find_next_keyframe(currentTime);
@@ -771,7 +832,7 @@ export default class ConsoleTimeline {
     
 
     get_timelines() {
-        return this._timelines;
+        return this._model?.rows;
     }
 
     get_selected_timeline() {

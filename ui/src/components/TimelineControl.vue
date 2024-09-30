@@ -1,60 +1,35 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import ConsoleTimeline from '../lib/console_timeline';
 
 const props = defineProps<{
   console_timeline: ConsoleTimeline;
 }>();
 
-let timelines = ref(props.console_timeline.get_timelines());
-let selected_timeline = ref(props.console_timeline.get_selected_timeline());
-let temp_fix = ref(0);
-let new_timeline_number = timelines.value.length;
-
-
-watch(() => props.console_timeline.get_timelines(), (new_timelines) => {
-  timelines.value = new_timelines;
-});
-
-watch(() => props.console_timeline.get_selected_timeline(), (new_selected) => {
-  selected_timeline.value = new_selected;
-});
-
-const update_values = () => {
-  timelines.value = props.console_timeline.get_timelines();
-  selected_timeline.value = props.console_timeline.get_selected_timeline();
-  temp_fix.value++;
-};
+// Use computed properties
+const timelines = computed(() => props.console_timeline.timelines.value);
+const selected_timeline = ref(props.console_timeline.get_selected_timeline());
 
 const select_timeline = (index: number) => {
   props.console_timeline.select_timeline(index);
-
-  update_values();
+  selected_timeline.value = index;
 };
 
 const add_timeline = () => {
-  const name = `Timeline Level ${new_timeline_number++}`;
+  const name = `Timeline Level ${timelines.value.length}`;
   props.console_timeline.add_timeline(name);
-
-  update_values();
 };
 
 const remove_timeline = (index: number) => {
   props.console_timeline.remove_timeline(index);
-
-  update_values();
 };
 
 const rename_timeline = (index: number, new_name: string) => {
   props.console_timeline.rename_timeline(index, new_name);
-
-  update_values();
 };
 
 const move_timeline = (from_index: number, to_index: number) => {
   props.console_timeline.move_timeline(from_index, to_index);
-
-  update_values();
 };
 
 const handle_rename = (index: number, event: Event) => {
@@ -66,7 +41,7 @@ const handle_rename = (index: number, event: Event) => {
 <template>
   <div class="timeline-control">
     <h3>Timelines</h3>
-    <ul :key="temp_fix">
+    <ul>
       <li v-for="(timeline, index) in timelines" :key="index">
         <input
           type="radio"
@@ -77,13 +52,15 @@ const handle_rename = (index: number, event: Event) => {
         />
         <input
           type="text"
-          :value="timeline.name"
-          @input="handle_rename(index, $event)"
+          v-model="timeline.title"
         />
         <button @click="move_timeline(index, index - 1)" :disabled="index === 0">
           ↑
         </button>
-        <button @click="move_timeline(index, index + 1)" :disabled="index === timelines.length - 1">
+        <button
+          @click="move_timeline(index, index + 1)"
+          :disabled="index === timelines.length - 1"
+        >
           ↓
         </button>
         <button @click="remove_timeline(index)" :disabled="timelines.length <= 1">
@@ -107,9 +84,3 @@ li {
   margin-bottom: 0.5rem;
 }
 </style>
-
-<script lang="ts">
-export default {
-  name: 'TimelineControl'
-}
-</script>
