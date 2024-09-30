@@ -28,7 +28,7 @@ export const defaultTimelineConsts: TimelineConsts = {
   /**
    * Private. Click threshold
    */
-  clickThreshold: 3,
+  clickThreshold: 5,
   /**
    * Private. Private.Click min radius for the elements detection.
    */

@@ -46,7 +46,7 @@ export default class ConsoleTimeline {
     private _timeline : Timeline | null = null;
     private _model : CustomTimelineModel | null = null;
     private _player : ConsolePlayer;
-    public mode = ref<string>('pan');
+    public mode = ref<string>('nonInteractivePan');
     private _a : number|null = null;
     private _b : number|null = null;
     private _selection_callback : Function|null = null;
@@ -162,6 +162,8 @@ export default class ConsoleTimeline {
         // When the time changes (event)
         this._timeline.onTimeChanged(async (args: any) => {
 
+            console.log(`time changed`, args);
+
             // If the player is playing, exit.
             if(this.playing) return;
 
@@ -184,20 +186,7 @@ export default class ConsoleTimeline {
              // Update local storage
              //localStorage.setItem("previous_session", await this.get_session_string());
 
-        });
-
-        /*
-        // When a keyframe is selected.
-        this._timeline.onSelected((args: any) => {
-            // console.log(`Selected keyframe:`);
-            // console.log(args);
-        });
-
-        this._timeline.onMouseDown((args: any) => {
-            // console.log(`Mouse down:`);
-            // console.log(args);
-        });
-        */
+        })
 
 
         // Set up a timer for 10fps.
@@ -210,6 +199,7 @@ export default class ConsoleTimeline {
 
         // Update the reactive timelines property
         this.timelines.value = this._model.rows;
+
 
     }
 
@@ -224,7 +214,7 @@ export default class ConsoleTimeline {
             // console.log(`ALPHA: Setting time to ${time}`);
             console.log({set_time_time: time, model: this._model});
             this._timeline.setTime(time*1000);
-            this._timeline.redraw();
+            //this._timeline.redraw();
 
         }
 
@@ -410,6 +400,14 @@ export default class ConsoleTimeline {
 
     // Returns a string representing an Asciinema JSON with the current annotations
     async get_session_string() {
+
+        // Show if there is a model or not.
+        if(!this._model){
+            console.log(`# NO MODEL!`);
+        }else{
+            console.log(`# MODEL!`);
+        }
+
 
         // Convert the model to the export format.
         const export_data = this.model_to_export(this._model as any);
