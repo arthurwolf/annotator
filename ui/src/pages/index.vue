@@ -538,12 +538,19 @@ function text_changed(event) {
 
 // Methods to handle the user's response to the dialog
 async function continue_previous_session() {
+    
     const previous_session = localStorage.getItem("previous_session");
 
     if (previous_session) {
-        console_player.setup(previous_session);
-        await console_timeline.attempt_data_import(previous_session);
+
         file_loaded.value = true;
+        
+        // Await nexttick. 
+        // This is required so there is an element in the DOM for the timeline to bind to.
+        await nextTick();
+
+        console_player.setup(previous_session);
+        await console_timeline.attempt_data_import(previous_session)
     }
 
     show_previous_session_dialog.value = false;

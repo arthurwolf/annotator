@@ -178,6 +178,7 @@ export default class ConsoleTimeline {
 
         });
 
+        /*
         // When a keyframe is selected.
         this._timeline.onSelected((args: any) => {
             // console.log(`Selected keyframe:`);
@@ -188,6 +189,7 @@ export default class ConsoleTimeline {
             // console.log(`Mouse down:`);
             // console.log(args);
         });
+        */
 
 
         // Set up a timer for 10fps.

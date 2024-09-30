@@ -1790,7 +1790,7 @@ export class Timeline extends TimelineEventsEmitter {
             this._ctx.fillStyle = '#bbb';
         }
 
-        console.log('Row index: ', row_index, 'Selected Row: ', this.selected_row, 'Row Fill Color: ', this._ctx.fillStyle);
+        // console.log('Row index: ', row_index, 'Selected Row: ', this.selected_row, 'Row Fill Color: ', this._ctx.fillStyle);
         
         //this._ctx.fillRect(data.areaRect.x, data.areaRect.y, data.areaRect.w, data.areaRect.h);
         // Note: bounds used instead of the clip while clip is slow!
@@ -2142,7 +2142,7 @@ export class Timeline extends TimelineEventsEmitter {
       this._ctx.stroke();
       this._renderTimelineCap(timeLinePos, y);
 
-      console.log(`# Timeline: value:${this._val}, `, 'Position A: ', this.position_a, 'Position B: ', this.position_b, 'Thickness: ', thickness, 'Y: ', y, 'Canvas Height: ', canvasHeight, 'TimeLinePos: ', timeLinePos, 'Y Bottom: ', yBottom)
+      // console.log(`# Timeline: value:${this._val}, `, 'Position A: ', this.position_a, 'Position B: ', this.position_b, 'Thickness: ', thickness, 'Y: ', y, 'Canvas Height: ', canvasHeight, 'TimeLinePos: ', timeLinePos, 'Y Bottom: ', yBottom)
 
       if(this.position_b){
         this._ctx.beginPath();
@@ -2330,7 +2330,7 @@ export class Timeline extends TimelineEventsEmitter {
   };
   public setTime = (val: number): boolean => {
     
-    console.log(`# setTime: ${val}`);
+    // console.log(`# setTime: ${val}`);
 
     // don't allow to change time during drag:
     if (this._drag && this._drag.type === TimelineElementType.Timeline) {
