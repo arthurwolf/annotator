@@ -220,10 +220,9 @@
 
 // Imports.
 import { Ref, ref, onMounted, onUnmounted, nextTick }                                        from 'vue';
-// import { show_popup } from '../lib/persist_session' 
 
 // Our classes.
-import ConsolePlayer from '../lib/console_player'
+import ConsolePlayer   from '../lib/console_player'
 import ConsoleTimeline from '../lib/console_timeline'
 
 // @ts-ignore
@@ -241,26 +240,14 @@ const file_input = ref<HTMLInputElement | null>(null);
 // Debug info.
 let debug : Ref<string> = ref('');
 
-// Level of detail.
-// let detail : Ref<string> = ref('near');
-
 // Flag for whether a file is loaded or not.
 let file_loaded : Ref<boolean> = ref(false);
-
-// Current text.
-// let current_text : Ref<string> = ref('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-
-// Reference to the textarea element
-//const textarea = ref<null | HTMLTextAreaElement>(null);
 
 // Reactive variable to control the visibility of the dialog
 const show_previous_session_dialog = ref(false);
 
 // Delete at the current position.
 function key_press_delete(){
-
-    // Log.
-    // console.log('Delete at current position.');
 
     // Delete.
     console_timeline.delete_at_current_position();
@@ -269,6 +256,7 @@ function key_press_delete(){
 
 // The "space" key was pressed, if the player is playing, pause it, if it's paused, play.
 function key_press_space() {
+
     // If the player is playing, pause it.
     if (console_player.playing.value) console_player.pause();
 
@@ -280,11 +268,10 @@ function key_press_space() {
 
 // The "end" key was pressed.
 function key_press_end() {
-    // Prevent the default "scroll to bottom" behavior.
 
     // Get the end position and seek to it.
     const end_position : number = console_player.seek_to_end();
-    // console.log('End position:', end_position);
+
     // Move the timeline to the end position.
     console_timeline.set_time(end_position);
 
@@ -295,6 +282,7 @@ function key_press_end() {
 
 // The "A" key was pressed.
 function key_press_a() {
+
     // Set the A keyframe.
     console_timeline.set_a();
 
@@ -332,19 +320,6 @@ function key_press_down() {
     console_timeline.skip_to_previous_annotation();
 }
 
-
-// Function to log the new radio group value
-/*
-function new_detail_value(event) {
-
-    // Get the new value
-    const new_value : string = event.target.value;
-
-    // Set the new value.
-    console_timeline.set_detail(new_value);
-
-}*/
-
 // Function triggered on button click to activate file input
 function on_upload_click() {
 
@@ -366,9 +341,6 @@ async function handle_file_upload(event: Event) {
 
         // Call the function to read the file as text
         const data : string = await read_as_text(file);
-
-        // Log.
-        // console.log('Asciinema player mounting.');
 
         // Call the setup_player function with the file content.
         console_player.setup(data);
@@ -431,65 +403,71 @@ async function read_as_text(file: File) : Promise<string> {
 
 // Define the event handler function
 const keydownHandler = (event: KeyboardEvent) => {
-  const annotationInput = document.getElementById('annotation');
-  if (document.activeElement === annotationInput) return;
 
-  switch (event.key) {
-    case ' ':
-      event.preventDefault();
-      key_press_space();
-      break;
-    case 'End':
-      event.preventDefault();
-      key_press_end();
-      break;
-    case 'a':
-    case 'A':
-      key_press_a();
-      break;
-    case 'b':
-    case 'B':
-      key_press_b();
-      break;
-    case 'c':
-    case 'C':
-      key_press_c();
-      break;
-    case 'Delete':
-      key_press_delete();
-      break;
-    case 'ArrowRight':
-      if (event.ctrlKey) {
-        event.preventDefault();
-        key_press_ctrl_right();
-      }
-      break;
-    case 'ArrowLeft':
-      if (event.ctrlKey) {
-        event.preventDefault();
-        key_press_ctrl_left();
-      }
-      break;
-    case 'ArrowUp':
-      event.preventDefault();
-      key_press_up();
-      break;
-    case 'ArrowDown':
-      event.preventDefault();
-      key_press_down();
-      break;
-    default:
-      break;
-  }
+    // Get the annotation input element.
+    const annotation_input = document.getElementById('annotation');
+
+    // If the active element is the annotation input, return.
+    if (document.activeElement === annotation_input) return;
+
+    switch (event.key) {
+        case ' ':
+            event.preventDefault();
+            key_press_space();
+            break;
+        case 'End':
+            event.preventDefault();
+            key_press_end();
+            break;
+        case 'a':
+        case 'A':
+            key_press_a();
+            break;
+        case 'b':
+        case 'B':
+            key_press_b();
+            break;
+        case 'c':
+        case 'C':
+            key_press_c();
+            break;
+        case 'Delete':
+            key_press_delete();
+            break;
+        case 'ArrowRight':
+            if (event.ctrlKey) {
+            event.preventDefault();
+            key_press_ctrl_right();
+            }
+            break;
+        case 'ArrowLeft':
+            if (event.ctrlKey) {
+            event.preventDefault();
+            key_press_ctrl_left();
+            }
+            break;
+        case 'ArrowUp':
+            event.preventDefault();
+            key_press_up();
+            break;
+        case 'ArrowDown':
+            event.preventDefault();
+            key_press_down();
+            break;
+        default:
+            break;
+    }
+
 };
 
 // On mounted hook
 onMounted(async () => {
+
+    // Get the previous session from local storage.
     const previous_session = localStorage.getItem("previous_session");
 
-    if (previous_session) {
-        show_previous_session_dialog.value = true;
-    }
+    // If there is a previous session, show the dialog.
+    if (previous_session) show_previous_session_dialog.value = true;
 
     // Set up the timeline selection event.
     console_timeline.on_selection((selection) => {
@@ -511,20 +489,12 @@ onMounted(async () => {
 
     });
 
+    // Add the keydown event listener.
     window.addEventListener('keydown', keydownHandler);
-
-    // 10 times per second:
-    /*
-    setInterval(() => {
-
-        // TODO: This is a dirty hack due to a failure at getting the right vuejs mechanisms to work, must be fixed.
-        debug.value = JSON.stringify({timeline: console_timeline.debug(), player: console_player.debug()}, null, 2);
-
-    }, 100);
-    */
 
 });
 
+// On unmounted hook
 onUnmounted(() => {
     window.removeEventListener('keydown', keydownHandler);
 });
@@ -532,32 +502,45 @@ onUnmounted(() => {
 // Function to handle the textarea text change.
 function text_changed(event) {
 
+    // Set the text.
     console_timeline.set_text(event?.target?.value)
 
 }
 
 // Methods to handle the user's response to the dialog
 async function continue_previous_session() {
-    
+
+    // Get the previous session from local storage.
     const previous_session = localStorage.getItem("previous_session");
 
+    // If there is a previous session, setup the player and timeline.
     if (previous_session) {
 
+        // Set the file loaded flag.
         file_loaded.value = true;
         
         // Await nexttick. 
         // This is required so there is an element in the DOM for the timeline to bind to.
         await nextTick();
 
+        // Setup the player and timeline.
         console_player.setup(previous_session);
-        await console_timeline.attempt_data_import(previous_session)
+
+        // Attempt to import the data.
+        await console_timeline.attempt_data_import(previous_session);
+
     }
 
+    // Hide the dialog.
     show_previous_session_dialog.value = false;
 }
 
+// Function to handle the user's response to the dialog
 function discard_previous_session() {
+    // Remove the previous session from local storage.
     localStorage.removeItem("previous_session");
+
+    // Hide the dialog.
     show_previous_session_dialog.value = false;
 }
 
