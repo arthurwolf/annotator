@@ -1212,7 +1212,7 @@ export class Timeline extends TimelineEventsEmitter {
 
       // Once mouse was moved outside of the bounds it's not a click anymore
       if (this._clickAllowed) {
-       // this._clickAllowed = this._selectionRect.height <= this._consts.clickThreshold && this._selectionRect.width <= this._consts.clickThreshold;
+       // this._clickAllowed = this._selectionRect.height <= this._consts.get_shold && this._selectionRect.width <= this._consts.clickThreshold;
       }
     }
 

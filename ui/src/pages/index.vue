@@ -144,11 +144,11 @@
                     <v-card-item>
                         <div id="timeline" v-show="file_loaded"></div>
 
-                        <v-card-title v-show="file_loaded">
+                        <v-card-title v-show="file_loaded && has_annotation">
                             Annotation text.
                         </v-card-title>
 
-                        <v-card-text v-show="file_loaded">
+                        <v-card-text v-show="file_loaded && has_annotation">
                             <textarea
                                 id="annotation"
                                 @keyup="text_changed"
@@ -236,6 +236,9 @@ const console_timeline : ConsoleTimeline = new ConsoleTimeline(console_player);
 
 // Initialize a ref for the file input element
 const file_input = ref<HTMLInputElement | null>(null);
+
+// Do we have an annotation?
+let has_annotation : Ref<boolean> = ref(false);
 
 // Debug info.
 let debug : Ref<string> = ref('');
@@ -471,6 +474,9 @@ onMounted(async () => {
 
     // Set up the timeline selection event.
     console_timeline.on_selection((selection) => {
+
+        // If selection is null, we don't have an annotation.
+        has_annotation.value = selection !== null;
 
         // Get the textarea.
         const textarea = document.getElementById('annotation') as HTMLInputElement;

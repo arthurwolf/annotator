@@ -175,17 +175,9 @@ export default class ConsoleTimeline {
 
             // Set the time in the player.
             this._player?.seek(time_ms/1000);
-
-            // Check for inactivity and skip to the next activity
-            // DEBUG: Why was this here at all in the first place ??? 
-            //this.skip_over_inactivity(true, time_ms);
-
+            
             // Call the selection callback.
             if(this._selection_callback) this._selection_callback(this.get_selected_annotation(time_ms/1000));
-
-             // Update local storage
-             //localStorage.setItem("previous_session", await this.get_session_string());
-
         })
 
 
