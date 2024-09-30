@@ -48,7 +48,7 @@ export default class ConsolePlayer {
         // this._player.play();
 
         // Mark the player as playing.
-        this.playing.value = true;
+        this.playing.value = false;
 
         // Mark the player as loaded.
         this.loaded.value = true;

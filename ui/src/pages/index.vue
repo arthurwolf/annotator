@@ -200,7 +200,7 @@
 
 
 // Imports.
-import { Ref, ref, onMounted, onUnmounted }                                        from 'vue';
+import { Ref, ref, onMounted, onUnmounted, nextTick }                                        from 'vue';
 //import { TimelineModel }                                              from "animation-timeline-js";
 //import {  TimelineModel }                                             from "../lib/animation-timeline-js/src/timeline.ts";
 import Keypress from 'vue-keypress';
@@ -208,12 +208,14 @@ import { show_popup } from '../lib/persist_session'
 
 
 // Our classes.
-import ConsolePlayer                                                  from '../lib/console_player';
-import ConsoleTimeline                                                from '../lib/console_timeline';
-import TimelineControl                                                from '../components/TimelineControl.vue';
+import ConsolePlayer from '../lib/console_player'
+import ConsoleTimeline from '../lib/console_timeline'
+
+// @ts-ignore
+import TimelineControl from '../components/TimelineControl.vue'
 
 // Make a new ConsolePlayer instance.
-const console_player   : ConsolePlayer   = new ConsolePlayer();
+const console_player: ConsolePlayer = new ConsolePlayer()
 
 // Make a new ConsoleTimeline instance.
 const console_timeline : ConsoleTimeline = new ConsoleTimeline(console_player);
@@ -353,11 +355,15 @@ async function handle_file_upload(event: Event) {
         // Call the setup_player function with the file content.
         console_player.setup(data);
 
-        // Same thing for the console timeline, if we have data.
-        await console_timeline.attempt_data_import(data);
-
         // Set the file loaded flag.
         file_loaded.value = true;
+
+        // Await nexttick. 
+        // This is required so there is an element in the DOM for the timeline to bind to.
+        await nextTick();
+
+        // Same thing for the console timeline, if we have data.
+        await console_timeline.attempt_data_import(data);
 
         // Save into local storage
         localStorage.setItem("previous_session", data);
@@ -405,6 +411,59 @@ async function read_as_text(file: File) : Promise<string> {
     return '';
 }
 
+// Define the event handler function
+const keydownHandler = (event: KeyboardEvent) => {
+  const annotationInput = document.getElementById('annotation');
+  if (document.activeElement === annotationInput) return;
+
+  switch (event.key) {
+    case ' ':
+      event.preventDefault();
+      key_press_space();
+      break;
+    case 'End':
+      event.preventDefault();
+      key_press_end();
+      break;
+    case 'a':
+    case 'A':
+      key_press_a();
+      break;
+    case 'b':
+    case 'B':
+      key_press_b();
+      break;
+    case 'c':
+    case 'C':
+      key_press_c();
+      break;
+    case 'Delete':
+      key_press_delete();
+      break;
+    case 'ArrowRight':
+      if (event.ctrlKey) {
+        event.preventDefault();
+        key_press_ctrl_right();
+      }
+      break;
+    case 'ArrowLeft':
+      if (event.ctrlKey) {
+        event.preventDefault();
+        key_press_ctrl_left();
+      }
+      break;
+    case 'ArrowUp':
+      event.preventDefault();
+      key_press_up();
+      break;
+    case 'ArrowDown':
+      event.preventDefault();
+      key_press_down();
+      break;
+    default:
+      break;
+  }
+};
 
 // On mounted hook
 onMounted(async () => {
@@ -431,52 +490,7 @@ onMounted(async () => {
 
     });
 
-    window.addEventListener('keydown', (event) => {
-    const annotationInput = document.getElementById('annotation');  
-    if (document.activeElement === annotationInput) return; //prevents space toggling play/pause when typing in the annotation area
-
-    switch (event.keyCode) {
-        case 32: // Space key (pause/play)
-            event.preventDefault(); // Prevents default action like scrolling
-            key_press_space();
-            break;
-        case 35: // End key (end of the line)
-            event.preventDefault(); // Prevents default action
-            key_press_end();
-            break;
-        case 65: // A key (set A keyframe)
-            key_press_a();
-            break;
-        case 66: // B key (set B keyframe)
-            key_press_b();
-            break;
-        case 67: // C key (create new annotation)
-            key_press_c();
-            break;
-        case 46: // Delete key (delete annotation)
-            key_press_delete();
-            break;
-        case 39: // ctrl + Right arrow key (skip forward over inactivity)
-            event.preventDefault();
-            key_press_ctrl_right();
-            break;
-        case 37: // ctrl + Left arrow key (skip backward over inactivity)
-            event.preventDefault();
-            key_press_ctrl_left();
-            break;
-        case 38: // Up arrow key (skip to next annotation)
-            event.preventDefault();
-            key_press_up();
-            break;
-        case 40: // Down arrow key (skip to previous annotation)
-            event.preventDefault();
-            key_press_down();
-            break;
-        default:
-            // If none of the cases match, do nothing
-            break;
-    }
-});
+    window.addEventListener('keydown', keydownHandler);
 
     // 10 times per second:
     /*
@@ -491,16 +505,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    window.removeEventListener('keydown', key_press_space);
-    window.removeEventListener('keydown', key_press_end);
-    window.removeEventListener('keydown', key_press_a);
-    window.removeEventListener('keydown', key_press_b);
-    window.removeEventListener('keydown', key_press_c);
-    window.removeEventListener('keydown', key_press_delete);
-    window.removeEventListener('keydown', key_press_ctrl_right);
-    window.removeEventListener('keydown', key_press_ctrl_left);
-    window.removeEventListener('keydown', key_press_up);
-    window.removeEventListener('keydown', key_press_down);
+    window.removeEventListener('keydown', keydownHandler);
 });
 
 // Function to handle the textarea text change.
