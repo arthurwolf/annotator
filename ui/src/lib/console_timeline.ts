@@ -72,6 +72,14 @@ export default class ConsoleTimeline {
         // Log the call stack until this point.
         console.trace();
 
+        // Set up a one minute timer to save the session string to local storage.
+        setInterval(async () => {
+
+            // Log.
+            localStorage.setItem("previous_session", await this.get_session_string());
+
+        }, 60000);
+
     }
 
     // Debug info.
@@ -174,7 +182,7 @@ export default class ConsoleTimeline {
             if(this._selection_callback) this._selection_callback(this.get_selected_annotation(time_ms/1000));
 
              // Update local storage
-             localStorage.setItem("previous_session", await this.get_session_string());
+             //localStorage.setItem("previous_session", await this.get_session_string());
 
         });
 
@@ -275,9 +283,6 @@ export default class ConsoleTimeline {
 
         // Set the value.
         if(found) found.first_keyframe.text = text;
-
-        // Update localStorage
-        localStorage.setItem("previous_session", await this.get_session_string());
 
     }
 
@@ -406,27 +411,8 @@ export default class ConsoleTimeline {
     // Returns a string representing an Asciinema JSON with the current annotations
     async get_session_string() {
 
-        // Make JSON from the model.
-        //const json = JSON.stringify(this._model);
-
-        // Make a sha hash of the JSON.
-        //const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json)))).map(b => b.toString(16).padStart(2, '0')).join('');
-
-        console.log({get_session_string_model: this._model});
-
         // Convert the model to the export format.
         const export_data = this.model_to_export(this._model as any);
-
-        console.log({get_session_string_export_data: export_data});
-
-        // Convert the export data back into model format.
-        //const model = this.export_to_model(export_data);
-
-        // Make a JSON of the from-export model.
-        //const json2 = JSON.stringify(model);
-
-        // Make a sha hash of the JSON.
-        //const hash2 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json2)))).map(b => b.toString(16).padStart(2, '0')).join('');
 
         // Get the player's data.
         const file_data : string = this._player.data ?? '';
