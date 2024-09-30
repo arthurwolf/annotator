@@ -6,8 +6,10 @@ const props = defineProps<{
   console_timeline: ConsoleTimeline;
 }>();
 
-const timelines = ref(props.console_timeline.get_timelines());
-const selected_timeline = ref(props.console_timeline.get_selected_timeline());
+let timelines = ref(props.console_timeline.get_timelines());
+let selected_timeline = ref(props.console_timeline.get_selected_timeline());
+let temp_fix = ref(0);
+let new_timeline_number = timelines.value.length;
 
 
 watch(() => props.console_timeline.get_timelines(), (new_timelines) => {
@@ -21,6 +23,7 @@ watch(() => props.console_timeline.get_selected_timeline(), (new_selected) => {
 const update_values = () => {
   timelines.value = props.console_timeline.get_timelines();
   selected_timeline.value = props.console_timeline.get_selected_timeline();
+  temp_fix.value++;
 };
 
 const select_timeline = (index: number) => {
@@ -30,7 +33,7 @@ const select_timeline = (index: number) => {
 };
 
 const add_timeline = () => {
-  const name = `Timeline ${timelines.value.length + 1}`;
+  const name = `Timeline Level ${new_timeline_number++}`;
   props.console_timeline.add_timeline(name);
 
   update_values();
@@ -63,7 +66,7 @@ const handle_rename = (index: number, event: Event) => {
 <template>
   <div class="timeline-control">
     <h3>Timelines</h3>
-    <ul>
+    <ul :key="temp_fix">
       <li v-for="(timeline, index) in timelines" :key="index">
         <input
           type="radio"
