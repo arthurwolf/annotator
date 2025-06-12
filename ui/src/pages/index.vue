@@ -134,6 +134,15 @@
                                             </v-tooltip>
                                         </v-btn>
                                     </v-col>
+
+                                    <v-col cols="auto" v-show="file_loaded">
+                                        <v-btn icon="mdi-clock-time-four-outline" size="large" @click="show_seek_dialog = true">
+                                            <v-icon>mdi-clock-time-four-outline</v-icon>
+                                            <v-tooltip activator="parent" location="bottom">
+                                                Seek to specific time.
+                                            </v-tooltip>
+                                        </v-btn>
+                                    </v-col>
                                 </v-row>
                             </v-container>
                         </v-card-text>
@@ -184,6 +193,7 @@
                                 <li><strong><pre>ctrl + Left</pre></strong> key: skip over inactivity backwards.</li>
                                 <li><strong><pre>Up</pre></strong> key: skip to next annotation.</li>
                                 <li><strong><pre>Down</pre></strong> key: skip to previous annotation.</li>
+                                <li><strong><pre>S</pre></strong> key: open seek dialog to jump to specific time.</li>
                             </ul>
                         </v-card-text>
                     </v-card-item>
@@ -211,6 +221,9 @@
             </v-card>
         </v-dialog>
 
+        <!-- Seek dialog -->
+        <SeekDialog v-model="show_seek_dialog" @seek="handle_seek" />
+
     </v-container>
 
 
@@ -227,6 +240,8 @@ import ConsoleTimeline from '../lib/console_timeline'
 
 // @ts-ignore
 import TimelineControl from '../components/TimelineControl.vue'
+// @ts-ignore
+import SeekDialog from '../components/SeekDialog.vue'
 
 // Make a new ConsolePlayer instance.
 const console_player: ConsolePlayer = new ConsolePlayer()
@@ -248,6 +263,9 @@ let file_loaded : Ref<boolean> = ref(false);
 
 // Reactive variable to control the visibility of the dialog
 const show_previous_session_dialog = ref(false);
+
+// Reactive variable for seek dialog visibility
+const show_seek_dialog = ref(false);
 
 // Delete at the current position.
 function key_press_delete(){
@@ -457,6 +475,11 @@ const keydownHandler = (event: KeyboardEvent) => {
             event.preventDefault();
             key_press_down();
             break;
+        case 's':
+        case 'S':
+            event.preventDefault();
+            show_seek_dialog.value = true;
+            break;
         default:
             break;
     }
@@ -548,6 +571,18 @@ function discard_previous_session() {
 
     // Hide the dialog.
     show_previous_session_dialog.value = false;
+}
+
+/**
+ * Handle seek to specific time
+ * @param seconds - The time in seconds to seek to
+ */
+function handle_seek(seconds: number) {
+    // Seek the player to the specified time
+    console_player.seek(seconds);
+    
+    // Update the timeline to match the player position
+    console_timeline.set_time(seconds);
 }
 
 </script>
